@@ -4,7 +4,7 @@
 			<view class="nav-item" :class="{current: filterIndex === 0}" @click="tabClick(0)">
 				综合排序
 			</view>
-			<view class="nav-item" :class="{current: filterIndex === 1}" @click="tabClick(1)">
+			<view class="nav-item" :class="{current: filterIndex === 1}" @click="tabClick(1,'sold_count_desc')">
 				销量优先
 			</view>
 			<view class="nav-item" :class="{current: filterIndex === 2}" @click="tabClick(2)">
@@ -71,13 +71,14 @@
 				loadingType: 'more', //加载更多状态
 				filterIndex: 0,
 				cateId: 0, //已选三级分类id
-				priceOrder: 0, //1 价格从低到高 2价格从高到低
 				cateList: [],
 				goodsList: [],
 
 
+        priceOrder: 0, //1 价格从低到高 2价格从高到低
         category_id:'',
         search:'',
+        order:'',
 
 			};
 		},
@@ -130,6 +131,7 @@
           page: this.page,
           category_id: this.category_id,
           search: this.search,
+          order: this.order
         }
         // 获取商品数据
         return getProduct(params)
@@ -194,13 +196,14 @@
 				}
 			},*/
 			//筛选点击
-			tabClick(index){
+			tabClick(index,_type=""){
 				if(this.filterIndex === index && index !== 2){
 					return;
 				}
 				this.filterIndex = index;
 				if(index === 2){
 					this.priceOrder = this.priceOrder === 1 ? 2: 1;
+          _type = this.priceOrder === 1 ? 'price_asc' : 'price_desc'
 				}else{
 					this.priceOrder = 0;
 				}
@@ -208,10 +211,9 @@
 					duration: 300,
 					scrollTop: 0
 				})
-				this.loadData('refresh', 1);
-				uni.showLoading({
-					title: '正在加载'
-				})
+
+        this.order = _type ? _type : ''
+        this.loadData(true)
 			},
 			//显示分类面板
 			toggleCateMask(type){
