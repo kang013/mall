@@ -9,6 +9,9 @@ export default {
             // 是否在加载中
             isLoading: false,
             loadingType: 'more',
+            properties:[],
+            onProperties: [],
+            blProperties: true,
         }
     },
     async onPullDownRefresh() {
@@ -36,6 +39,15 @@ export default {
         async loadData(reset = false) {
             const dataResponse = await this.fetchData()
 
+            // 商品属性
+            this.properties = dataResponse.data.properties
+
+            if(this.blProperties){
+                // 固定数据
+                this.onProperties = this.properties
+                this.blProperties = false
+            }
+            //console.log(this.onProperties)
 
             this.resourceData = reset ? dataResponse.data.products.data : this.resourceData.concat(dataResponse.data.products.data)
 
@@ -46,6 +58,8 @@ export default {
                 this.noMoreData = true
                 this.loadingType = 'nomore'
             }
+
+
         }
     }
 }

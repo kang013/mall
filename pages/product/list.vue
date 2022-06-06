@@ -37,14 +37,14 @@
 		<view class="cate-mask" :class="cateMaskState===0 ? 'none' : cateMaskState===1 ? 'show' : ''" @click="toggleCateMask">
 			<view class="cate-content" @click.stop.prevent="stopPrevent" @touchmove.stop.prevent="stopPrevent">
 				<scroll-view scroll-y class="cate-list">
-					<view v-for="item in cateList" :key="item.id">
-						<view class="cate-item b-b two">{{item.name}}</view>
+					<view v-for="(item,key) in onProperties" :key="key" :class="'active-list'+key">
+						<view class="cate-item b-b two">{{item.key}}</view>
 						<view
-							v-for="tItem in item.child" :key="tItem.id"
+							v-for="tItem in item.values"
 							class="cate-item b-b"
-							:class="{active: tItem.id==cateId}"
-							@click="changeCate(tItem)">
-							{{tItem.name}}
+							:class="{active: item.selected==tItem}"
+							@click="appendFilterToQuery(item.key, tItem,key)">
+							{{tItem}}
 						</view>
 					</view>
 				</scroll-view>
@@ -79,6 +79,7 @@
         category_id:'',
         search:'',
         order:'',
+        filters:'',
 
 			};
 		},
@@ -113,11 +114,9 @@
 		},*/
 
     async onLoad(option) {
-      console.log(option)
+
       // #ifdef H5
       this.headerTop = document.getElementsByTagName('uni-page-head')[0].offsetHeight+'px';
-
-      this.loadCateList(1,1);
 
       this.category_id = option.category_id
       this.search = option.search
@@ -131,12 +130,32 @@
           page: this.page,
           category_id: this.category_id,
           search: this.search,
-          order: this.order
+          order: this.order,
+          filters: this.filters,
         }
+        console.log(params)
         // 获取商品数据
         return getProduct(params)
       },
+      // 将新的 filter 追加到当前的 Url 中
+      appendFilterToQuery(name, value, index) {
 
+        let list = this.onProperties;
+
+        let _filters = ''
+        this.$set(list[index], 'selected', value);
+        list.forEach(item=>{
+          //console.log(item)
+          if(item.selected){
+            _filters += '|' + item.key + ':' + item.selected;
+          }
+        })
+
+        this.filters = _filters.replace('|',"") // 去除第一个|
+        console.log(this.filters)
+
+        this.loadData(true)
+      },
 
 
 

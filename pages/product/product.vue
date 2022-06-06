@@ -5,15 +5,15 @@
 				<swiper-item class="swiper-item" v-for="(item,index) in imgList" :key="index">
 					<view class="image-wrapper">
 						<image
-							:src="item.src" 
-							class="loaded" 
+							:src="item.src"
+							class="loaded"
 							mode="aspectFill"
 						></image>
 					</view>
 				</swiper-item>
 			</swiper>
 		</view>
-		
+
 		<view class="introduce-section">
 			<text class="title">恒源祥2019春季长袖白色t恤 新款春装</text>
 			<view class="price-box">
@@ -28,7 +28,7 @@
 				<text>浏览量: 768</text>
 			</view>
 		</view>
-		
+
 		<!--  分享 -->
 		<view class="share-section" @click="share">
 			<view class="share-icon">
@@ -41,9 +41,9 @@
 				立即分享
 				<text class="yticon icon-you"></text>
 			</view>
-			
+
 		</view>
-		
+
 		<view class="c-list">
 			<view class="c-row b-b" @click="toggleSpec">
 				<text class="tit">购买类型</text>
@@ -76,7 +76,7 @@
 				</view>
 			</view>
 		</view>
-		
+
 		<!-- 评价 -->
 		<view class="eva-section">
 			<view class="e-header">
@@ -84,7 +84,7 @@
 				<text>(86)</text>
 				<text class="tip">好评率 100%</text>
 				<text class="yticon icon-you"></text>
-			</view> 
+			</view>
 			<view class="eva-box">
 				<image class="portrait" src="http://img3.imgtn.bdimg.com/it/u=1150341365,1327279810&fm=26&gp=0.jpg" mode="aspectFill"></image>
 				<view class="right">
@@ -97,14 +97,14 @@
 				</view>
 			</view>
 		</view>
-		
+
 		<view class="detail-desc">
 			<view class="d-header">
 				<text>图文详情</text>
 			</view>
 			<rich-text :nodes="desc"></rich-text>
 		</view>
-		
+
 		<!-- 底部操作菜单 -->
 		<view class="page-bottom">
 			<navigator url="/pages/index/index" open-type="switchTab" class="p-b-btn">
@@ -119,17 +119,17 @@
 				<text class="yticon icon-shoucang"></text>
 				<text>收藏</text>
 			</view>
-			
+
 			<view class="action-btn-group">
 				<button type="primary" class=" action-btn no-border buy-now-btn" @click="buy">立即购买</button>
 				<button type="primary" class=" action-btn no-border add-cart-btn">加入购物车</button>
 			</view>
 		</view>
-		
-		
+
+
 		<!-- 规格-模态层弹窗 -->
-		<view 
-			class="popup spec" 
+		<view
+			class="popup spec"
 			:class="specClass"
 			@touchmove.stop.prevent="stopPrevent"
 			@click="toggleSpec"
@@ -153,8 +153,8 @@
 				<view v-for="(item,index) in specList" :key="index" class="attr-list">
 					<text>{{item.name}}</text>
 					<view class="item-list">
-						<text 
-							v-for="(childItem, childIndex) in specChildList" 
+						<text
+							v-for="(childItem, childIndex) in specChildList"
 							v-if="childItem.pid === item.id"
 							:key="childIndex" class="tit"
 							:class="{selected: childItem.selected}"
@@ -168,8 +168,8 @@
 			</view>
 		</view>
 		<!-- 分享 -->
-		<share 
-			ref="share" 
+		<share
+			ref="share"
 			:contentHeight="580"
 			:shareList="shareList"
 		></share>
@@ -186,7 +186,7 @@
 			return {
 				specClass: 'none',
 				specSelected:[],
-				
+
 				favorite: true,
 				shareList: [],
 				imgList: [
@@ -214,7 +214,7 @@
 						id: 1,
 						name: '尺寸',
 					},
-					{	
+					{
 						id: 2,
 						name: '颜色',
 					},
@@ -269,14 +269,14 @@
 			};
 		},
 		async onLoad(options){
-			
-			//接收传值,id里面放的是标题，因为测试数据并没写id 
+
+			//接收传值,id里面放的是标题，因为测试数据并没写id
 			let id = options.id;
 			if(id){
 				this.$api.msg(`点击了${id}`);
 			}
-			
-			
+
+
 			//规格 默认选中第一条
 			this.specList.forEach(item=>{
 				for(let cItem of this.specChildList){
@@ -317,17 +317,17 @@
 				 * 将这几行代码替换即可
 				 * 选择的规格存放在specSelected中
 				 */
-				this.specSelected = []; 
-				list.forEach(item=>{ 
-					if(item.selected === true){ 
-						this.specSelected.push(item); 
-					} 
+				this.specSelected = [];
+				list.forEach(item=>{
+					if(item.selected === true){
+						this.specSelected.push(item);
+					}
 				})
-				
+
 			},
 			//分享
 			share(){
-				this.$refs.share.toggleMask();	
+				this.$refs.share.toggleMask();
 			},
 			//收藏
 			toFavorite(){
@@ -374,14 +374,14 @@
 				height: 100%;
 			}
 		}
-		
+
 	}
-	
+
 	/* 标题简介 */
 	.introduce-section{
 		background: #fff;
 		padding: 20upx 30upx;
-		
+
 		.title{
 			font-size: 32upx;
 			color: $font-color-dark;
@@ -412,7 +412,7 @@
 			color: #fff;
 			border-radius: 6upx;
 			line-height: 1;
-			transform: translateY(-4upx); 
+			transform: translateY(-4upx);
 		}
 		.bot-row{
 			display:flex;
@@ -485,7 +485,7 @@
 			color: $uni-color-primary;
 		}
 	}
-	
+
 	.c-list{
 		font-size: $font-sm + 2upx;
 		color: $font-color-base;
@@ -526,7 +526,7 @@
 			color: $uni-color-primary;
 		}
 	}
-	
+
 	/* 评价 */
 	.eva-section{
 		display: flex;
@@ -595,7 +595,7 @@
 			font-size: $font-base + 2upx;
 			color: $font-color-dark;
 			position: relative;
-				
+
 			text{
 				padding: 0 20upx;
 				background: #fff;
@@ -610,11 +610,11 @@
 				width: 300upx;
 				height: 0;
 				content: '';
-				border-bottom: 1px solid #ccc; 
+				border-bottom: 1px solid #ccc;
 			}
 		}
 	}
-	
+
 	/* 规格选择弹窗 */
 	.attr-content{
 		padding: 10upx 30upx;
@@ -676,7 +676,7 @@
 			}
 		}
 	}
-	
+
 	/*  弹出层 */
 	.popup {
 		position: fixed;
@@ -685,7 +685,7 @@
 		right: 0;
 		bottom: 0;
 		z-index: 99;
-		
+
 		&.show {
 			display: block;
 			.mask{
@@ -765,7 +765,7 @@
 			}
 		}
 	}
-	
+
 	/* 底部操作菜单 */
 	.page-bottom{
 		position:fixed;
@@ -780,7 +780,7 @@
 		background: rgba(255,255,255,.9);
 		box-shadow: 0 0 20upx 0 rgba(0,0,0,.5);
 		border-radius: 16upx;
-		
+
 		.p-b-btn{
 			display:flex;
 			flex-direction: column;
@@ -839,5 +839,5 @@
 			}
 		}
 	}
-	
+
 </style>
