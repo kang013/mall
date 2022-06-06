@@ -57,43 +57,26 @@
 <script>
   import { getProduct } from '@/api/product'
   import listRefresh from '@/mixins/list-product-refresh.js'
-	import uniLoadMore from '@/components/uni-load-more/uni-load-more.vue';
 	export default {
     mixins: [ listRefresh ],
-		components: {
-			uniLoadMore
-		},
 		data() {
 			return {
 				cateMaskState: 0, //分类面板展开状态
 				headerPosition:"fixed",
 				headerTop:"0px",
-				loadingType: 'more', //加载更多状态
-				filterIndex: 0,
 				cateId: 0, //已选三级分类id
 				cateList: [],
 				goodsList: [],
-
-
+        filterIndex: 0,
         priceOrder: 0, //1 价格从低到高 2价格从高到低
         category_id:'',
         search:'',
         order:'',
         filters:'',
-
 			};
 		},
 
-		/*onLoad(options){
-			// #ifdef H5
-			this.headerTop = document.getElementsByTagName('uni-page-head')[0].offsetHeight+'px';
-			// #endif
-			this.cateId = options.tid;
-			this.loadCateList(options.fid,options.sid);
-			this.loadData();
 
-      this.loadGoods()
-		},*/
 		onPageScroll(e){
 			//兼容iOS端下拉时顶部漂移
 			if(e.scrollTop>=0){
@@ -102,16 +85,6 @@
 				this.headerPosition = "absolute";
 			}
 		},
-		//下拉刷新
-		/*onPullDownRefresh(){
-			this.loadData('refresh');
-		},*/
-
-
-		//加载更多
-		/*onReachBottom(){
-			this.loadData();
-		},*/
 
     async onLoad(option) {
 
@@ -157,63 +130,6 @@
         this.loadData(true)
       },
 
-
-
-
-
-
-			//加载分类
-			async loadCateList(fid, sid){
-				let list = await this.$api.json('cateList');
-				let cateList = list.filter(item=>item.pid == fid);
-
-				cateList.forEach(item=>{
-					let tempList = list.filter(val=>val.pid == item.id);
-					item.child = tempList;
-				})
-				this.cateList = cateList;
-			},
-			//加载商品 ，带下拉刷新和上滑加载
-			/*async loadData(type='add', loading) {
-				//没有更多直接返回
-				if(type === 'add'){
-					if(this.loadingType === 'nomore'){
-						return;
-					}
-					this.loadingType = 'loading';
-				}else{
-					this.loadingType = 'more'
-				}
-
-				let goodsList = await this.$api.json('goodsList');
-				if(type === 'refresh'){
-					this.goodsList = [];
-				}
-				//筛选，测试数据直接前端筛选了
-				if(this.filterIndex === 1){
-					goodsList.sort((a,b)=>b.sales - a.sales)
-				}
-				if(this.filterIndex === 2){
-					goodsList.sort((a,b)=>{
-						if(this.priceOrder == 1){
-							return a.price - b.price;
-						}
-						return b.price - a.price;
-					})
-				}
-
-				this.goodsList = this.goodsList.concat(goodsList);
-
-				//判断是否还有下一页，有是more  没有是nomore(测试数据判断大于20就没有了)
-				this.loadingType  = this.goodsList.length > 20 ? 'nomore' : 'more';
-				if(type === 'refresh'){
-					if(loading == 1){
-						uni.hideLoading()
-					}else{
-						uni.stopPullDownRefresh();
-					}
-				}
-			},*/
 			//筛选点击
 			tabClick(index,_type=""){
 				if(this.filterIndex === index && index !== 2){
@@ -243,23 +159,10 @@
 					this.cateMaskState = state;
 				}, timer)
 			},
-			//分类点击
-			changeCate(item){
-				this.cateId = item.id;
-				this.toggleCateMask();
-				uni.pageScrollTo({
-					duration: 300,
-					scrollTop: 0
-				})
-				this.loadData('refresh', 1);
-				uni.showLoading({
-					title: '正在加载'
-				})
-			},
 			//详情
 			navToDetailPage(item){
 				//测试数据没有写id，用title代替
-				let id = item.title;
+				let id = item.id
 				uni.navigateTo({
 					url: `/pages/product/product?id=${id}`
 				})

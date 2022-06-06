@@ -5,3 +5,9 @@ export function getProduct(data) {
         data: data
     })
 }
+
+export function getProductInfo(id,data) {
+    return request('products/' + id, {
+        data: data
+    })
+}

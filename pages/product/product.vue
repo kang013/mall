@@ -5,7 +5,7 @@
 				<swiper-item class="swiper-item" v-for="(item,index) in imgList" :key="index">
 					<view class="image-wrapper">
 						<image
-							:src="item.src"
+							:src="item"
 							class="loaded"
 							mode="aspectFill"
 						></image>
@@ -15,17 +15,17 @@
 		</view>
 
 		<view class="introduce-section">
-			<text class="title">恒源祥2019春季长袖白色t恤 新款春装</text>
+			<text class="title">{{product.long_title ? product.long_title : product.title}}</text>
 			<view class="price-box">
 				<text class="price-tip">¥</text>
-				<text class="price">341.6</text>
-				<text class="m-price">¥488</text>
-				<text class="coupon-tip">7折</text>
+				<text class="price">{{product.price}}</text>
+<!--				<text class="m-price">¥488</text>
+				<text class="coupon-tip">7折</text>-->
 			</view>
 			<view class="bot-row">
-				<text>销量: 108</text>
-				<text>库存: 4690</text>
-				<text>浏览量: 768</text>
+				<text>销量: {{product.sold_count}}</text>
+<!--				<text>库存: 4690</text>
+				<text>浏览量: 768</text>-->
 			</view>
 		</view>
 
@@ -102,7 +102,7 @@
 			<view class="d-header">
 				<text>图文详情</text>
 			</view>
-			<rich-text :nodes="desc"></rich-text>
+			<rich-text class="desc" :nodes="product.description"></rich-text>
 		</view>
 
 		<!-- 底部操作菜单 -->
@@ -178,6 +178,7 @@
 
 <script>
 	import share from '@/components/share';
+  import { getProductInfo } from '@/api/product'
 	export default{
 		components: {
 			share
@@ -265,16 +266,20 @@
 						pid: 2,
 						name: '草木绿',
 					},
-				]
-			};
+				],
+        product:[],
+			}
 		},
 		async onLoad(options){
 
 			//接收传值,id里面放的是标题，因为测试数据并没写id
 			let id = options.id;
 			if(id){
-				this.$api.msg(`点击了${id}`);
+       let data = await getProductInfo(id)
+        this.product = data.data.product
+        this.imgList = this.product.images_url
 			}
+      console.log(this.imgList)
 
 
 			//规格 默认选中第一条
@@ -839,5 +844,9 @@
 			}
 		}
 	}
+
+  .desc img{
+    width: 100%;
+  }
 
 </style>
