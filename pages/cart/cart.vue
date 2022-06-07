@@ -1,11 +1,11 @@
 <template>
 	<view class="container">
 		<!-- 空白页 -->
-		<view v-if="!hasLogin || empty===true" class="empty">
+		<view v-if="!isLoggedIn || empty===true" class="empty">
 			<image src="/static/emptyCart.jpg" mode="aspectFit"></image>
-			<view v-if="hasLogin" class="empty-tips">
+			<view v-if="isLoggedIn" class="empty-tips">
 				空空如也
-				<navigator class="navigator" v-if="hasLogin" url="../index/index" open-type="switchTab">随便逛逛></navigator>
+				<navigator class="navigator" v-if="isLoggedIn" url="../index/index" open-type="switchTab">随便逛逛></navigator>
 			</view>
 			<view v-else class="empty-tips">
 				空空如也
@@ -17,47 +17,47 @@
 			<view class="cart-list">
 				<block v-for="(item, index) in cartList" :key="item.id">
 					<view
-						class="cart-item" 
+						class="cart-item"
 						:class="{'b-b': index!==cartList.length-1}"
 					>
 						<view class="image-wrapper">
-							<image :src="item.image" 
-								:class="[item.loaded]"
-								mode="aspectFill" 
-								lazy-load 
-								@load="onImageLoad('cartList', index)" 
+							<image :src="item.product_sku.product.image_url"
+								class="loaded"
+								mode="aspectFill"
+								lazy-load
+								@load="onImageLoad('cartList', index)"
 								@error="onImageError('cartList', index)"
 							></image>
-							<view 
+							<view
 								class="yticon icon-xuanzhong2 checkbox"
 								:class="{checked: item.checked}"
 								@click="check('item', index)"
 							></view>
 						</view>
 						<view class="item-right">
-							<text class="clamp title">{{item.title}}</text>
-							<text class="attr">{{item.attr_val}}</text>
-							<text class="price">¥{{item.price}}</text>
-							<uni-number-box 
+							<text class="clamp title">{{item.product_sku.product.title}}</text>
+							<text class="attr">{{item.product_sku.title}}</text>
+							<text class="price">¥{{item.product_sku.price}}</text>
+							<uni-number-box
 								class="step"
-								:min="1" 
+								:min="1"
 								:max="item.stock"
-								:value="item.number>item.stock?item.stock:item.number"
-								:isMax="item.number>=item.stock?true:false"
-								:isMin="item.number===1"
+								:value="item.amount>item.product_sku.stock?item.stock:item.amount"
+								:isMax="item.amount>=item.product_sku.stock?true:false"
+								:isMin="item.amount===1"
 								:index="index"
 								@eventChange="numberChange"
 							></uni-number-box>
 						</view>
-						<text class="del-btn yticon icon-fork" @click="deleteCartItem(index)"></text>
+						<text class="del-btn yticon icon-fork" @click="deleteCartItem(index,item.id)"></text>
 					</view>
 				</block>
 			</view>
 			<!-- 底部菜单栏 -->
 			<view class="action-section">
 				<view class="checkbox">
-					<image 
-						:src="allChecked?'/static/selected.png':'/static/select.png'" 
+					<image
+						:src="allChecked?'/static/selected.png':'/static/select.png'"
 						mode="aspectFit"
 						@click="check('all')"
 					></image>
@@ -80,14 +80,17 @@
 </template>
 
 <script>
-	import {
-		mapState
-	} from 'vuex';
+  import {mapGetters} from 'vuex'
 	import uniNumberBox from '@/components/uni-number-box.vue'
+  import { getCart,deleteCart } from '@/api/cart'
 	export default {
 		components: {
 			uniNumberBox
 		},
+    computed: {
+      // 用户信息
+      ...mapGetters(['isLoggedIn'])
+    },
 		data() {
 			return {
 				total: 0, //总价格
@@ -96,8 +99,11 @@
 				cartList: [],
 			};
 		},
+    onShow(){
+      this.loadData();
+    },
 		onLoad(){
-			this.loadData();
+			//this.loadData();
 		},
 		watch:{
 			//显示空白页
@@ -108,13 +114,12 @@
 				}
 			}
 		},
-		computed:{
-			...mapState(['hasLogin'])
-		},
 		methods: {
 			//请求数据
 			async loadData(){
-				let list = await this.$api.json('cartList'); 
+        let cart = await getCart();
+				let list = cart.data.cartItems
+
 				let cartList = list.map(item=>{
 					item.checked = true;
 					return item;
@@ -151,26 +156,28 @@
 			},
 			//数量
 			numberChange(data){
-				this.cartList[data.index].number = data.number;
+				this.cartList[data.index].amount = data.number;
 				this.calcTotal();
 			},
 			//删除
-			deleteCartItem(index){
-				let list = this.cartList;
-				let row = list[index];
-				let id = row.id;
+			async deleteCartItem(index,id){
+        await deleteCart(id)
 
 				this.cartList.splice(index, 1);
 				this.calcTotal();
 				uni.hideLoading();
 			},
 			//清空
-			clearCart(){
+      clearCart(){
+        let list = this.cartList
+        let id = list[0].id
+
 				uni.showModal({
 					content: '清空购物车？',
 					success: (e)=>{
 						if(e.confirm){
-							this.cartList = [];
+              deleteCart(id, {all:true})
+              this.cartList = []
 						}
 					}
 				})
@@ -186,7 +193,7 @@
 				let checked = true;
 				list.forEach(item=>{
 					if(item.checked === true){
-						total += item.price * item.number;
+						total += item.product_sku.price * item.amount;
 					}else if(checked === true){
 						checked = false;
 					}
@@ -302,7 +309,7 @@
 		}
 		.del-btn{
 			padding:4upx 10upx;
-			font-size:34upx; 
+			font-size:34upx;
 			height: 50upx;
 			color: $font-color-light;
 		}

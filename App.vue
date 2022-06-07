@@ -448,4 +448,7 @@
 	.placeholder {
 		color: #999999;
 	}
+  uni-rich-text img {
+    max-width: 100% !important;
+  }
 </style>
