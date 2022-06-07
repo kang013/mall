@@ -100,7 +100,9 @@
 			};
 		},
     onShow(){
-      this.loadData();
+      if(this.isLoggedIn){
+        this.loadData();
+      }
     },
 		onLoad(){
 			//this.loadData();

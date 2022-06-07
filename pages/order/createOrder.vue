@@ -6,10 +6,10 @@
 				<text class="yticon icon-shouhuodizhi"></text>
 				<view class="cen">
 					<view class="top">
-						<text class="name">{{addressData.name}}</text>
-						<text class="mobile">{{addressData.mobile}}</text>
+						<text class="name">{{addressData.contact_name}}</text>
+						<text class="mobile">{{addressData.contact_phone}}</text>
 					</view>
-					<text class="address">{{addressData.address}} {{addressData.area}}</text>
+					<text class="address">{{addressData.province}}{{addressData.city}}{{addressData.district}}{{addressData.address}}</text>
 				</view>
 				<text class="yticon icon-you"></text>
 			</view>
@@ -106,6 +106,7 @@
 </template>
 
 <script>
+  import { getDefaultAddress } from '@/api/address'
 	export default {
 		data() {
 			return {
@@ -128,22 +129,18 @@
 						price: 15,
 					}
 				],
-				addressData: {
-					name: '许小星',
-					mobile: '13853989563',
-					addressName: '金九大道',
-					address: '山东省济南市历城区',
-					area: '149号',
-					default: false,
-				}
+				addressData: {}
 			}
 		},
-		onLoad(option){
+		async onLoad(option){
 			//商品数据
 			let data = JSON.parse(option.data);
       this.goodsData = data.goodsData
       this.calcTotal()
-      console.log(this.total)
+
+      // 收获地址
+      let address = await getDefaultAddress()
+      this.addressData = address.data
 		},
 		methods: {
       //计算总价
