@@ -26,11 +26,13 @@ var getters = {
 const actions = {
     async login ({ dispatch, commit }, params = {}) {
         const authResponse = await login(params)
+        if(authResponse){
+            commit('setToken', authResponse.data)
+            auth.setToken(authResponse.data)
 
-        commit('setToken', authResponse.data)
-        auth.setToken(authResponse.data)
+            dispatch('getUser')
+        }
 
-        dispatch('getUser')
     },
     async getUser ({ dispatch, commit }) {
         const userResponse = await getCurrentUser()

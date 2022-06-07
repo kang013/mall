@@ -48,10 +48,15 @@
 <script>
   import store from '@/store'
   import { login } from '@/api/auth'
+  import {mapGetters} from 'vuex'
 
 
 	export default{
     store,
+    computed: {
+      // 用户信息
+      ...mapGetters(['isLoggedIn'])
+    },
     data(){
 			return {
         formData: {
@@ -93,11 +98,14 @@
 		methods: {
       async submit() {
         this.$refs.form.validate().then(res=>{
-          console.log('表单数据信息：', res);
-          this.$store.dispatch('login', res)
-
+          //console.log('表单数据信息：', res);
+          this.$store.dispatch('login', res).then(result=>{
+            if(this.isLoggedIn){
+              this.navBack()
+            }
+          })
         }).catch(err =>{
-          console.log('表单错误信息：', err);
+          //console.log('表单错误信息：', err);
         })
       },
 
