@@ -4,11 +4,11 @@
 			<view class="wrapper">
 				<view class="address-box">
 					<text v-if="item.default" class="tag">默认</text>
-					<text class="address">{{item.addressName}} {{item.area}}</text>
+					<text class="address">{{item.full_address}}</text>
 				</view>
 				<view class="u-box">
-					<text class="name">{{item.name}}</text>
-					<text class="mobile">{{item.mobile}}</text>
+					<text class="name">{{item.contact_name}}</text>
+					<text class="mobile">{{item.contact_phone}}</text>
 				</view>
 			</view>
 			<text class="yticon icon-bianji" @click.stop="addAddress('edit', item)"></text>
@@ -16,12 +16,13 @@
 		<text style="display:block;padding: 16upx 30upx 10upx;lihe-height: 1.6;color: #fa436a;font-size: 24upx;">
 			重要：添加和修改地址回调仅增加了一条数据做演示，实际开发中将回调改为请求后端接口刷新一下列表即可
 		</text>
-		
+
 		<button class="add-btn" @click="addAddress('add')">新增地址</button>
 	</view>
 </template>
 
 <script>
+  import { getAddress } from '@/api/address'
 	export default {
 		data() {
 			return {
@@ -45,9 +46,12 @@
 				]
 			}
 		},
-		onLoad(option){
+		async onLoad(option){
 			console.log(option.source);
 			this.source = option.source;
+      let addressData = await getAddress()
+      this.addressList = addressData.data
+      console.log(addressData)
 		},
 		methods: {
 			//选择地址
@@ -67,7 +71,7 @@
 			refreshList(data, type){
 				//添加或修改后事件，这里直接在最前面添加了一条数据，实际应用中直接刷新地址列表即可
 				this.addressList.unshift(data);
-				
+
 				console.log(data, type);
 			}
 		}
@@ -127,7 +131,7 @@
 		color: $font-color-light;
 		padding-left: 30upx;
 	}
-	
+
 	.add-btn{
 		position: fixed;
 		left: 30upx;
@@ -143,6 +147,6 @@
 		color: #fff;
 		background-color: $base-color;
 		border-radius: 10upx;
-		box-shadow: 1px 2px 5px rgba(219, 63, 96, 0.4);		
+		box-shadow: 1px 2px 5px rgba(219, 63, 96, 0.4);
 	}
 </style>

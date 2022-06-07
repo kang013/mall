@@ -18,30 +18,16 @@
 		</navigator>
 
 		<view class="goods-section">
-			<view class="g-header b-b">
-				<image class="logo" src="http://duoduo.qibukj.cn/./Upload/Images/20190321/201903211727515.png"></image>
-				<text class="name">西城小店铺</text>
-			</view>
+
 			<!-- 商品列表 -->
-			<view class="g-item">
-				<image src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=756705744,3505936868&fm=11&gp=0.jpg"></image>
+			<view class="g-item" v-for="item in goodsData">
+				<image :src="item.image"></image>
 				<view class="right">
-					<text class="title clamp">古黛妃 短袖t恤女夏装2019新款</text>
-					<text class="spec">春装款 L</text>
+					<text class="title clamp">{{item.title}}</text>
+					<text class="spec">{{item.sku_title}}</text>
 					<view class="price-box">
-						<text class="price">￥17.8</text>
-						<text class="number">x 1</text>
-					</view>
-				</view>
-			</view>
-			<view class="g-item">
-				<image src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=1620020012,789258862&fm=26&gp=0.jpg"></image>
-				<view class="right">
-					<text class="title clamp">韩版于是洞洞拖鞋 夏季浴室防滑简约居家【新人专享，限选意见】</text>
-					<text class="spec">春装款 L</text>
-					<view class="price-box">
-						<text class="price">￥17.8</text>
-						<text class="number">x 1</text>
+						<text class="price">￥{{item.price}}</text>
+						<text class="number">x {{item.amount}}</text>
 					</view>
 				</view>
 			</view>
@@ -71,11 +57,7 @@
 		<view class="yt-list">
 			<view class="yt-list-cell b-b">
 				<text class="cell-tit clamp">商品金额</text>
-				<text class="cell-tip">￥179.88</text>
-			</view>
-			<view class="yt-list-cell b-b">
-				<text class="cell-tit clamp">优惠金额</text>
-				<text class="cell-tip red">-￥35</text>
+				<text class="cell-tip">￥{{total}}</text>
 			</view>
 			<view class="yt-list-cell b-b">
 				<text class="cell-tit clamp">运费</text>
@@ -86,17 +68,17 @@
 				<input class="desc" type="text" v-model="desc" placeholder="请填写备注信息" placeholder-class="placeholder" />
 			</view>
 		</view>
-		
+
 		<!-- 底部 -->
 		<view class="footer">
 			<view class="price-content">
 				<text>实付款</text>
 				<text class="price-tip">￥</text>
-				<text class="price">475</text>
+				<text class="price">{{total}}</text>
 			</view>
 			<text class="submit" @click="submit">提交订单</text>
 		</view>
-		
+
 		<!-- 优惠券面板 -->
 		<view class="mask" :class="maskState===0 ? 'none' : maskState===1 ? 'show' : ''" @click="toggleMask">
 			<view class="mask-content" @click.stop.prevent="stopPrevent">
@@ -111,7 +93,7 @@
 							<text class="price">{{item.price}}</text>
 							<text>满30可用</text>
 						</view>
-						
+
 						<view class="circle l"></view>
 						<view class="circle r"></view>
 					</view>
@@ -127,6 +109,8 @@
 	export default {
 		data() {
 			return {
+        goodsData:[],
+        total:'',
 				maskState: 0, //优惠券面板显示状态
 				desc: '', //备注
 				payType: 1, //1微信 2支付宝
@@ -156,10 +140,22 @@
 		},
 		onLoad(option){
 			//商品数据
-			//let data = JSON.parse(option.data);
-			//console.log(data);
+			let data = JSON.parse(option.data);
+      this.goodsData = data.goodsData
+      this.calcTotal()
+      console.log(this.total)
 		},
 		methods: {
+      //计算总价
+      calcTotal(){
+        let list = this.goodsData
+        let total = 0;
+        list.forEach(item=>{
+          total += item.price * item.amount;
+        })
+        this.total = Number(total.toFixed(2));
+      },
+
 			//显示优惠券面板
 			toggleMask(type){
 				let timer = type === 'show' ? 10 : 300;
@@ -169,12 +165,7 @@
 					this.maskState = state;
 				}, timer)
 			},
-			numberChange(data) {
-				this.number = data.number;
-			},
-			changePayType(type){
-				this.payType = type;
-			},
+
 			submit(){
 				uni.redirectTo({
 					url: '/pages/money/pay'
@@ -406,7 +397,7 @@
 			color: $font-color-dark;
 		}
 	}
-	
+
 	/* 支付列表 */
 	.pay-list{
 		padding-left: 40upx;
@@ -417,7 +408,7 @@
 			align-items: center;
 			padding-right: 20upx;
 			line-height: 1;
-			height: 110upx;	
+			height: 110upx;
 			position: relative;
 		}
 		.icon-weixinzhifu{
@@ -445,7 +436,7 @@
 			flex: 1;
 		}
 	}
-	
+
 	.footer{
 		position: fixed;
 		left: 0;
@@ -483,7 +474,7 @@
 			background-color: $base-color;
 		}
 	}
-	
+
 	/* 优惠券面板 */
 	.mask{
 		display: flex;
@@ -496,7 +487,7 @@
 		background: rgba(0,0,0,0);
 		z-index: 9995;
 		transition: .3s;
-		
+
 		.mask-content{
 			width: 100%;
 			min-height: 30vh;
@@ -511,7 +502,7 @@
 		}
 		&.show{
 			background: rgba(0,0,0,.4);
-			
+
 			.mask-content{
 				transform: translateY(0);
 			}

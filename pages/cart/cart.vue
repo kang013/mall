@@ -202,17 +202,36 @@
 				this.total = Number(total.toFixed(2));
 			},
 			//创建订单
-			createOrder(){
-				let list = this.cartList;
-				let goodsData = [];
+      async createOrder(){
+				/*let list = this.cartList;
+				let req = [];
 				list.forEach(item=>{
 					if(item.checked){
-						goodsData.push({
-							attr_val: item.attr_val,
-							number: item.number
+            req.push({
+              sku_id: item.product_sku_id,
+              amount: item.amount
 						})
 					}
 				})
+        */
+
+        let list = this.cartList;
+        console.log(list)
+        let goodsData = [];
+        list.forEach(item=>{
+          if(item.checked){
+            goodsData.push({
+              title: item.product_sku.product.title,
+              sku_title: item.product_sku.title,
+              price:item.product_sku.price,
+              image:item.product_sku.product.image_url,
+              sku_id: item.product_sku_id,
+              amount: item.amount
+            })
+          }
+        })
+
+        console.log(goodsData)
 
 				uni.navigateTo({
 					url: `/pages/order/createOrder?data=${JSON.stringify({
