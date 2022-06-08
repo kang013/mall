@@ -107,6 +107,7 @@
 
 <script>
   import { getDefaultAddress } from '@/api/address'
+  import { createOrder } from '@/api/order'
 	export default {
 		data() {
 			return {
@@ -137,10 +138,13 @@
 			let data = JSON.parse(option.data);
       this.goodsData = data.goodsData
       this.calcTotal()
+      console.log(this.goodsData)
 
       // 收获地址
       let address = await getDefaultAddress()
       this.addressData = address.data
+
+      console.log(this.addressData)
 		},
 		methods: {
       //计算总价
@@ -155,6 +159,7 @@
 
 			//显示优惠券面板
 			toggleMask(type){
+        // ..dodo
 				let timer = type === 'show' ? 10 : 300;
 				let	state = type === 'show' ? 1 : 0;
 				this.maskState = 2;
@@ -163,10 +168,27 @@
 				}, timer)
 			},
 
-			submit(){
-				uni.redirectTo({
+			async submit(){
+        let list = this.goodsData
+        let sku = []
+        list.forEach(item=>{
+          sku.push(
+              {
+                sku_id: item.sku_id,
+                amount: item.amount,
+              }
+          )
+        })
+        let data = {
+          address_id: this.addressData.id,
+          items: sku,
+          remark: this.desc
+        }
+        console.log(data)
+        await createOrder(data)
+				/*uni.redirectTo({
 					url: '/pages/money/pay'
-				})
+				})*/
 			},
 			stopPrevent(){}
 		}
