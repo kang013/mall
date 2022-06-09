@@ -138,13 +138,11 @@
 			let data = JSON.parse(option.data);
       this.goodsData = data.goodsData
       this.calcTotal()
-      console.log(this.goodsData)
 
       // 收获地址
       let address = await getDefaultAddress()
       this.addressData = address.data
 
-      console.log(this.addressData)
 		},
 		methods: {
       //计算总价
@@ -184,11 +182,12 @@
           items: sku,
           remark: this.desc
         }
-        console.log(data)
-        await createOrder(data)
-				/*uni.redirectTo({
-					url: '/pages/money/pay'
-				})*/
+
+        let order = await createOrder(data)
+        console.log(order)
+				uni.redirectTo({
+					url: '/pages/money/pay?order_id=' + order.data.id + '&total=' + order.data.total_amount
+				})
 			},
 			stopPrevent(){}
 		}

@@ -12,3 +12,11 @@ export function getOrder(data) {
         data: data
     })
 }
+
+export function getOrderDefault(id,data) {
+    return authRequest('orders/' + id)
+}
+
+export function payAlipay(id,data) {
+    return authRequest('payment/'+id+'/alipay')
+}

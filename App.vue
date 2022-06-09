@@ -6,22 +6,10 @@
 		mapMutations
 	} from 'vuex';
 	export default {
-		/*methods: {
-			...mapMutations(['login'])
-		},
-		onLaunch: function() {
-			let userInfo = uni.getStorageSync('userInfo') || '';
-			if(userInfo.id){
-				//更新登陆状态
-				uni.getStorage({
-					key: 'userInfo',
-					success: (res) => {
-						this.login(res.data);
-					}
-				});
-			}
-
-		},*/
+    // 定义全局常量
+    globalData: {
+      url: 'http://127.0.0.1:8000'
+    },
 		onShow: function() {
 			console.log('App Show')
 		},

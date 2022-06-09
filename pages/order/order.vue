@@ -17,6 +17,7 @@
 					class="list-scroll-content"
 					scroll-y
 					@scrolltolower="loadBottom"
+          :scroll-top="scrollTop"
 				>
 					<!-- 空白页 -->
 					<empty v-if="tabItem.loaded === true && tabItem.orderList.length === 0"></empty>
@@ -27,16 +28,25 @@
 						class="order-item"
 					>
 						<view class="i-top b-b">
-							<text class="time">{{item.time}}</text>
-							<text class="state" :style="{color: item.stateTipColor}">{{item.stateTip}}</text>
+							<text class="time">{{item.created_at}}</text>
+              <template v-if="item.paid_at">
+                <text class="state" v-if="item.refund_status == 'pending'">已支付</text>
+                <text class="state" v-else>{{item.order_status}}</text>
+              </template>
+              <template v-else-if="item.closed">
+                <text class="state" style="color: #909399" >已关闭</text>
+              </template>
+              <template v-else>
+                <text class="state" >请于{{item.order_closed}}前完成支付</text>
+              </template>
 							<text
-								v-if="item.state===9"
+								v-if="item.closed"
 								class="del-btn yticon icon-iconfontshanchu1"
 								@click="deleteOrder(index)"
 							></text>
 						</view>
 
-						<scroll-view v-if="item.items.length > 1" class="goods-box" scroll-x>
+						<scroll-view v-if="item.items.length > 1" class="goods-box" scroll-x @click="toOrder(item.id)">
 							<view
 								v-for="(goodsItem, goodsIndex) in item.items" :key="goodsIndex"
 								class="goods-item"
@@ -48,6 +58,7 @@
 							v-if="item.items.length === 1"
 							class="goods-box-single"
 							v-for="(goodsItem, goodsIndex) in item.items" :key="goodsIndex"
+              @click="toOrder(item.id)"
 						>
 							<image class="goods-img" :src="goodsItem.product.image_url" mode="aspectFill"></image>
 							<view class="right">
@@ -78,9 +89,7 @@
 </template>
 
 <script>
-//	import uniLoadMore from '@/components/uni-load-more/uni-load-more.vue';
 	import empty from "@/components/empty";
-	import Json from '@/Json';
   import { getOrder } from '@/api/order'
 	export default {
 		components: {
@@ -130,19 +139,12 @@
         loadingType: 'more',
         status:'',
         shipStatus:'',
-        scrollTop: 0,
-        old: {
-          scrollTop: 0
-        }
+        scrollTop: 0,  // 切换tab时返回顶部
 			};
 		},
 
     async onLoad(options){
-
-			// #ifndef MP
-			this.loadData()
-
-
+			await this.loadData()
 		},
 
 		methods: {
@@ -166,6 +168,7 @@
           status:this.status,
           shipStatus:this.shipStatus
         })
+        console.log(dataResponse)
         this.resourceData = reset ? dataResponse.data.data : this.resourceData.concat(dataResponse.data.data)
 
         const pagination = dataResponse.data
@@ -176,46 +179,6 @@
           this.loadingType = 'nomore'
         }
       },
-
-			//获取订单列表
-			/*loadData(source){
-				//这里是将订单挂载到tab列表下
-				let index = this.tabCurrentIndex;
-				let navItem = this.navList[index];
-				let state = navItem.state;
-
-				if(source === 'tabChange' && navItem.loaded === true){
-					//tab切换只有第一次需要加载数据
-					return;
-				}
-				if(navItem.loadingType === 'loading'){
-					//防止重复加载
-					return;
-				}
-
-				navItem.loadingType = 'loading';
-
-				setTimeout(()=>{
-					let orderList = Json.orderList.filter(item=>{
-						//添加不同状态下订单的表现形式
-						item = Object.assign(item, this.orderStateExp(item.state));
-						//演示数据所以自己进行状态筛选
-						if(state === 0){
-							//0为全部订单
-							return item;
-						}
-						return item.state === state
-					});
-					orderList.forEach(item=>{
-						navItem.orderList.push(item);
-					})
-					//loaded新字段用于表示数据加载完毕，如果为空可以显示空白页
-					this.$set(navItem, 'loaded', true);
-
-					//判断是否还有数据， 有改为 more， 没有改为noMore
-					navItem.loadingType = 'more';
-				}, 600);
-			},*/
 
       // 订单类型
       orderStatus(index){
@@ -239,6 +202,10 @@
       },
 			//swiper 切换
 			changeTab(e){
+        this.page = 1
+        this.noMoreData = false
+        this.isLoading = false
+        this.loadingType = 'more'
 				this.tabCurrentIndex = e.target.current;
         this.orderStatus(this.tabCurrentIndex)
 				this.loadData(true);
@@ -246,9 +213,14 @@
 			//顶部tab点击
 			tabClick(index){
 				this.tabCurrentIndex = index;
-        this.orderStatus(this.tabCurrentIndex)
+        //this.orderStatus(this.tabCurrentIndex)
 
 			},
+      toOrder(id){
+        uni.navigateTo({
+          url: `/pages/order/orderView?id=${id}`
+        })
+      },
 			//删除订单
 			deleteOrder(index){
 				uni.showLoading({
@@ -281,24 +253,6 @@
 				}, 600)
 			},
 
-			//订单状态文字和颜色
-			orderStateExp(state){
-				let stateTip = '',
-					stateTipColor = '#fa436a';
-				switch(+state){
-					case 1:
-						stateTip = '待付款'; break;
-					case 2:
-						stateTip = '待发货'; break;
-					case 9:
-						stateTip = '订单已关闭';
-						stateTipColor = '#909399';
-						break;
-
-					//更多自定义
-				}
-				return {stateTip, stateTipColor};
-			}
 		},
 	}
 </script>

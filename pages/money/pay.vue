@@ -2,12 +2,12 @@
 	<view class="app">
 		<view class="price-box">
 			<text>支付金额</text>
-			<text class="price">38.88</text>
+			<text class="price">{{total}}</text>
 		</view>
 
 		<view class="pay-type-list">
 
-			<view class="type-item b-b" @click="changePayType(1)">
+			<view class="type-item b-b" >
 				<text class="icon yticon icon-weixinzhifu"></text>
 				<view class="con">
 					<text class="tit">微信支付</text>
@@ -15,7 +15,6 @@
 				</view>
 				<label class="radio">
 					<radio value="" color="#fa436a" :checked='payType == 1' />
-					</radio>
 				</label>
 			</view>
 			<view class="type-item b-b" @click="changePayType(2)">
@@ -25,40 +24,31 @@
 				</view>
 				<label class="radio">
 					<radio value="" color="#fa436a" :checked='payType == 2' />
-					</radio>
-				</label>
-			</view>
-			<view class="type-item" @click="changePayType(3)">
-				<text class="icon yticon icon-erjiye-yucunkuan"></text>
-				<view class="con">
-					<text class="tit">预存款支付</text>
-					<text>可用余额 ¥198.5</text>
-				</view>
-				<label class="radio">
-					<radio value="" color="#fa436a" :checked='payType == 3' />
-					</radio>
 				</label>
 			</view>
 		</view>
-		
-		<text class="mix-btn" @click="confirm">确认支付</text>
+		<text class="mix-btn" @click="confirm(payType)">确认支付</text>
 	</view>
 </template>
 
 <script>
-
+  import { payAlipay } from '@/api/order'
 	export default {
 		data() {
 			return {
 				payType: 1,
-				orderInfo: {}
+				orderInfo: {},
+        total:'',
+        order_id:'',
 			};
 		},
 		computed: {
-		
+
 		},
 		onLoad(options) {
-			
+      this.total = options.total
+      this.order_id = options.order_id
+
 		},
 
 		methods: {
@@ -66,11 +56,17 @@
 			changePayType(type) {
 				this.payType = type;
 			},
+
 			//确认支付
-			confirm: async function() {
-				uni.redirectTo({
-					url: '/pages/money/paySuccess'
-				})
+			confirm: async function(type) {
+        if(type === 1){
+          uni.redirectTo({
+					  url: '/pages/money/paySuccess'
+				  })
+        }else if(type === 2){
+          let pay = await payAlipay(this.order_id)
+          document.write(pay.data) // 打开支付宝支付页面
+        }
 			},
 		}
 	}
@@ -106,7 +102,7 @@
 		margin-top: 20upx;
 		background-color: #fff;
 		padding-left: 60upx;
-		
+
 		.type-item{
 			height: 120upx;
 			padding: 20upx 0;
@@ -117,7 +113,7 @@
 			font-size: 30upx;
 			position:relative;
 		}
-		
+
 		.icon{
 			width: 100upx;
 			font-size: 52upx;

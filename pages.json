@@ -188,6 +188,12 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path" : "pages/order/orderView",
+			"style": {
+				"navigationBarTitleText": "订单详情"
+			}
 		}
 
 
