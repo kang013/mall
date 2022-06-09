@@ -184,7 +184,7 @@
         }
 
         let order = await createOrder(data)
-        console.log(order)
+
 				uni.redirectTo({
 					url: '/pages/money/pay?order_id=' + order.data.id + '&total=' + order.data.total_amount
 				})

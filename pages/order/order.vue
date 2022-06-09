@@ -20,7 +20,7 @@
           :scroll-top="scrollTop"
 				>
 					<!-- 空白页 -->
-					<empty v-if="tabItem.loaded === true && tabItem.orderList.length === 0"></empty>
+					<empty v-if="resourceData.length === 0"></empty>
 
 					<!-- 订单列表 -->
 					<view
@@ -75,8 +75,9 @@
 							<text class="price">{{item.total_amount}}</text>
 						</view>
 						<view class="action-box b-t" v-if="item.state != 9">
-							<button class="action-btn" @click="cancelOrder(item)">取消订单</button>
-							<button class="action-btn recom">立即支付</button>
+              <button class="action-btn" v-if="item.paid_at" >申请退款</button>
+              <button class="action-btn" v-if="!item.paid_at && !item.closed"  @click="cancelOrder(item)" >取消订单</button>
+              <button class="action-btn recom" v-if="!item.paid_at && !item.closed" @click="payOrder(item.id,item.total_amount)">立即支付</button>
 						</view>
 					</view>
 
@@ -231,6 +232,11 @@
 					uni.hideLoading();
 				}, 600)
 			},
+      payOrder(id,total){
+        uni.redirectTo({
+          url: '/pages/money/pay?order_id=' + id + '&total=' + total
+        })
+      },
 			//取消订单
 			cancelOrder(item){
 				uni.showLoading({

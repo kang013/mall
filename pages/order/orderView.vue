@@ -1,5 +1,23 @@
 <template>
   <view class="content">
+<!--    <view class="top-txt">
+      <view class="tb-x">
+        <uni-icons class="l-icon" type="reload" size="22"></uni-icons>
+        <text class="l-txt">等待付款</text>
+      </view>
+    </view>-->
+    <view class="address-section">
+      <view class="order-content">
+        <text class="yticon icon-shouhuodizhi"></text>
+        <view class="cen">
+          <view class="top">
+            <text class="name">{{order.address.contact_name}}</text>
+            <text class="mobile">{{order.address.contact_phone}}</text>
+          </view>
+          <text class="address">{{order.address.address}}</text>
+        </view>
+      </view>
+    </view>
     <view
         class="order-item"
     >
@@ -43,6 +61,14 @@
         <text class="t-left clt">{{order.paid_at ? '实付款：' : '需付款：'}}</text><text class="t-right state">{{order.total_amount}}</text>
       </view>
     </view>
+    <view class="bottom-bar">
+      <view class="action-box" >
+        <button class="action-btn" v-if="order.paid_at" >申请退款</button>
+        <button class="action-btn" v-if="!order.paid_at && !order.closed" >取消订单</button>
+        <button class="action-btn recom" v-if="!order.paid_at && !order.closed">立即支付</button>
+        <button class="action-btn" v-if="order.closed" >删除订单</button>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -70,6 +96,61 @@ export default {
 page, .content {
   background: $page-color-base;
   height: 100%;
+}
+
+.address-section {
+  padding: 30upx 0;
+  background: #fff;
+  position: relative;
+
+  .order-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .icon-shouhuodizhi {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90upx;
+    color: #888;
+    font-size: 44upx;
+  }
+
+  .cen {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    font-size: 28upx;
+    color: $font-color-dark;
+  }
+
+  .name {
+    font-size: 34upx;
+    margin-right: 24upx;
+  }
+
+  .address {
+    margin-top: 16upx;
+    margin-right: 20upx;
+    color: $font-color-light;
+  }
+
+  .icon-you {
+    font-size: 32upx;
+    color: $font-color-light;
+    margin-right: 30upx;
+  }
+
+  .a-bg {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    height: 5upx;
+  }
 }
 
 .order-item {
@@ -239,6 +320,58 @@ page, .content {
   .text-list .state {
     font-size: 40rpx;
     color: $base-color;
+  }
+
+
+}
+.bottom-bar{
+  background: #fff;
+  margin-top: 16rpx;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  box-shadow: 0 0 4upx 0 rgba(0,0,0,.1);
+
+
+  .action-box{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100upx;
+    position: relative;
+    padding-right: 30upx;
+  }
+  .action-btn{
+    width: 160upx;
+    height: 60upx;
+    margin: 0;
+    margin-left: 24upx;
+    padding: 0;
+    text-align: center;
+    line-height: 60upx;
+    font-size: $font-sm + 2upx;
+    color: $font-color-dark;
+    background: #fff;
+    border-radius: 100px;
+    &:after{
+      border-radius: 100px;
+    }
+    &.recom{
+      background: #fff9f9;
+      color: $base-color;
+      &:after{
+        border-color: #f7bcc8;
+      }
+    }
+  }
+}
+.top-txt{
+  text-align: center;
+  padding: 30rpx;
+
+  .tb-x .l-txt{
+    font-size: 36rpx;
+    margin-left: 10rpx;
   }
 }
 </style>
