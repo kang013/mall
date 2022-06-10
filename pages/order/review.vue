@@ -17,6 +17,7 @@ export default {
 
   },
   methods: {
+    // todo..
     onChange(e) {
       console.log('rate发生改变:' + JSON.stringify(e))
     }
