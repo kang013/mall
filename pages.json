@@ -194,6 +194,12 @@
 			"style": {
 				"navigationBarTitleText": "订单详情"
 			}
+		},
+		{
+			"path" : "pages/order/review",
+			"style": {
+				"navigationBarTitleText": "评价"
+			}
 		}
 
 

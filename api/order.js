@@ -20,3 +20,31 @@ export function getOrderDefault(id,data) {
 export function payAlipay(id,data) {
     return authRequest('payment/'+id+'/alipay')
 }
+
+export function cancelOrder(id,data) {
+    return authRequest('orders/' + id + '/cancel', {
+        method: 'post',
+        data: data
+    })
+}
+
+export function deleteOrder(id,data) {
+    return authRequest('orders/' + id + '/delete', {
+        method: 'post',
+        data: data
+    })
+}
+
+export function refundOrder(id,data) {
+    return authRequest('orders/' + id + '/apply_refund', {
+        method: 'post',
+        data: data
+    })
+}
+
+export function receivedOrder(id,data) {
+    return authRequest('orders/' + id + '/received', {
+        method: 'post',
+        data: data
+    })
+}

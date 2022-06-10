@@ -46,6 +46,9 @@
       <view class="text-list">
         <text class="t-left">备注：</text><text class="t-right">{{order.remark}}</text>
       </view>
+      <view class="text-list" v-if="order.extra">
+        <text class="t-left">退款拒绝理由：</text><text class="t-right">{{order.extra.refund_disagree_reason}}</text>
+      </view>
     </view>
     <view class="order-item">
       <view class="text-list">
@@ -63,31 +66,93 @@
     </view>
     <view class="bottom-bar">
       <view class="action-box" >
-        <button class="action-btn" v-if="order.paid_at" >申请退款</button>
-        <button class="action-btn" v-if="!order.paid_at && !order.closed" >取消订单</button>
+        <text v-if="order.refund_status === 'applied'">已申请退款</text>
+        <button class="action-btn" v-if="order.paid_at && order.refund_status === 'pending'" @click="applyRefund()" >申请退款</button>
+        <button class="action-btn" v-if="!order.paid_at && !order.closed" @click="cancelOrder(order.id)" >取消订单</button>
+        <button class="action-btn" v-if="order.ship_status === 'delivered'" @click="receipt(order.id)" >确定收货</button>
         <button class="action-btn recom" v-if="!order.paid_at && !order.closed">立即支付</button>
-        <button class="action-btn" v-if="order.closed" >删除订单</button>
+        <button class="action-btn" v-if="order.closed" @click="deleteOrder(order.id)" >删除订单</button>
       </view>
     </view>
+    <uni-popup ref="inputDialog" type="dialog">
+      <uni-popup-dialog ref="inputClose" mode="input" title="请输入退款理由" value=""
+                        placeholder="请输入退款理由" @confirm="dialogInputConfirm"></uni-popup-dialog>
+    </uni-popup>
   </view>
 </template>
 
 <script>
-import { getOrderDefault } from '@/api/order'
+import { getOrderDefault,cancelOrder,deleteOrder,refundOrder,receivedOrder } from '@/api/order'
 export default {
   data() {
     return {
       order:[],
+      index:'',
     }
   },
   async onLoad(options){
-    console.log(options.id)
     let order = await getOrderDefault(options.id)
     this.order = order.data.order
-    console.log(this.order)
+    this.index = options.index
   },
   methods: {
-
+    //删除订单
+    deleteOrder(id){
+      uni.showModal({
+        content: '确定要删除订单？',
+        success: (e)=>{
+          if(e.confirm){
+            deleteOrder(id)
+            uni.$emit("order", {
+              index: this.index,
+              isDel: true,
+            }) // 全局事件
+            uni.navigateBack()
+          }
+        }
+      })
+    },
+    //取消订单
+    async cancelOrder(id){
+      uni.showModal({
+        content: '确定要取消订单？',
+        success: (e)=>{
+          if(e.confirm){
+            cancelOrder(id)
+            this.order.closed = 1
+          }
+        }
+      })
+    },
+    async dialogInputConfirm(val) {
+      if(!val){
+        this.$api.msg('请输入退款理由');
+        return
+      }
+      refundOrder(this.order.id,{
+        reason:val
+      })
+      this.$refs.inputDialog.close()
+      this.order.refund_status = 'applied'
+      this.order.order_status = '已申请退款'
+    },
+    // 申请退款
+    applyRefund()
+    {
+      this.$refs.inputDialog.open()
+    },
+    // 确认收货
+    receipt(){
+      uni.showModal({
+        content: '确定要收货吗？',
+        success: (e)=>{
+          if(e.confirm){
+            receivedOrder(this.order.id)
+            this.order.ship_status = 'received'
+          }
+        }
+      })
+    }
   }
 }
 </script>

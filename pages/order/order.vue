@@ -42,11 +42,11 @@
 							<text
 								v-if="item.closed"
 								class="del-btn yticon icon-iconfontshanchu1"
-								@click="deleteOrder(index)"
+								@click="deleteOrder(item.id,index)"
 							></text>
 						</view>
 
-						<scroll-view v-if="item.items.length > 1" class="goods-box" scroll-x @click="toOrder(item.id)">
+						<scroll-view v-if="item.items.length > 1" class="goods-box" scroll-x @click="toOrder(item.id,index)">
 							<view
 								v-for="(goodsItem, goodsIndex) in item.items" :key="goodsIndex"
 								class="goods-item"
@@ -58,7 +58,7 @@
 							v-if="item.items.length === 1"
 							class="goods-box-single"
 							v-for="(goodsItem, goodsIndex) in item.items" :key="goodsIndex"
-              @click="toOrder(item.id)"
+              @click="toOrder(item.id,index)"
 						>
 							<image class="goods-img" :src="goodsItem.product.image_url" mode="aspectFill"></image>
 							<view class="right">
@@ -74,10 +74,11 @@
 							件商品 实付款
 							<text class="price">{{item.total_amount}}</text>
 						</view>
-						<view class="action-box b-t" v-if="item.state != 9">
-              <button class="action-btn" v-if="item.paid_at" >申请退款</button>
-              <button class="action-btn" v-if="!item.paid_at && !item.closed"  @click="cancelOrder(item)" >取消订单</button>
+						<view class="action-box b-t" >
+              <button class="action-btn" v-if="item.paid_at && item.refund_status === 'pending'" @click="applyRefund(item.id,index)" >申请退款</button>
+              <button class="action-btn" v-if="!item.paid_at && !item.closed"  @click="cancelOrder(item.id,index)" >取消订单</button>
               <button class="action-btn recom" v-if="!item.paid_at && !item.closed" @click="payOrder(item.id,item.total_amount)">立即支付</button>
+              <button class="action-btn recom" v-if="item.paid_at && item.ship_status === 'received'" @click="review(item.id,index)">评价</button>
 						</view>
 					</view>
 
@@ -86,12 +87,16 @@
 				</scroll-view>
 			</swiper-item>
 		</swiper>
+    <uni-popup ref="inputDialog" type="dialog">
+      <uni-popup-dialog ref="inputClose" mode="input" title="请输入退款理由" value=""
+                        placeholder="请输入退款理由" @confirm="dialogInputConfirm"></uni-popup-dialog>
+    </uni-popup>
 	</view>
 </template>
 
 <script>
 	import empty from "@/components/empty";
-  import { getOrder } from '@/api/order'
+  import { getOrder,cancelOrder,deleteOrder,refundOrder } from '@/api/order'
 	export default {
 		components: {
 			empty
@@ -141,13 +146,26 @@
         status:'',
         shipStatus:'',
         scrollTop: 0,  // 切换tab时返回顶部
+        index:'', // 删除，全局事件回调index
+        order_id:'',
+        listIndex:'',
 			};
 		},
 
     async onLoad(options){
 			await this.loadData()
 		},
-
+    onShow(){
+      // 移除监听事件
+      uni.$off('order');
+      //全局事件订阅，只要订阅了事件就可以收到值
+      uni.$on("order",async (res)=>{
+        //我是全局事件订阅的调用方法
+        if(res.isDel){
+          this.resourceData.splice(res.index,1) // 删除元素
+        }
+      })
+    },
 		methods: {
       async loadBottom(){
 
@@ -217,20 +235,22 @@
         //this.orderStatus(this.tabCurrentIndex)
 
 			},
-      toOrder(id){
+      toOrder(id,index){
         uni.navigateTo({
-          url: `/pages/order/orderView?id=${id}`
+          url: `/pages/order/orderView?id=${id}&index=${index}`
         })
       },
 			//删除订单
-			deleteOrder(index){
-				uni.showLoading({
-					title: '请稍后'
-				})
-				setTimeout(()=>{
-					this.navList[this.tabCurrentIndex].orderList.splice(index, 1);
-					uni.hideLoading();
-				}, 600)
+			deleteOrder(id,index){
+        uni.showModal({
+          content: '确定要删除订单？',
+          success: (e)=>{
+            if(e.confirm){
+              deleteOrder(id)
+              this.resourceData.splice(index,1) // 删除元素
+            }
+          }
+        })
 			},
       payOrder(id,total){
         uni.redirectTo({
@@ -238,27 +258,42 @@
         })
       },
 			//取消订单
-			cancelOrder(item){
-				uni.showLoading({
-					title: '请稍后'
-				})
-				setTimeout(()=>{
-					let {stateTip, stateTipColor} = this.orderStateExp(9);
-					item = Object.assign(item, {
-						state: 9,
-						stateTip,
-						stateTipColor
-					})
-
-					//取消订单后删除待付款中该项
-					let list = this.navList[1].orderList;
-					let index = list.findIndex(val=>val.id === item.id);
-					index !== -1 && list.splice(index, 1);
-
-					uni.hideLoading();
-				}, 600)
+			async cancelOrder(id,index){
+        uni.showModal({
+          content: '确定要取消订单？',
+          success: (e)=>{
+            if(e.confirm){
+              cancelOrder(id)
+              this.resourceData[index].closed = 1
+            }
+          }
+        })
 			},
-
+      async dialogInputConfirm(val) {
+        if(!val){
+          this.$api.msg('请输入退款理由');
+          return
+        }
+        refundOrder(this.order_id,{
+          reason:val
+        })
+        this.$refs.inputDialog.close()
+        this.resourceData[this.listIndex].refund_status = 'applied'
+        this.resourceData[this.listIndex].order_status = '已申请退款'
+      },
+      // 申请退款
+      applyRefund(id,index)
+      {
+        this.order_id = id
+        this.listIndex = index
+        this.$refs.inputDialog.open()
+      },
+      // 评价
+      review(id,index){
+        uni.navigateTo({
+          url: `/pages/order/review?id=${id}&index=${index}`
+        })
+      }
 		},
 	}
 </script>
