@@ -198,12 +198,28 @@
 		{
 			"path" : "pages/order/review",
 			"style": {
-				"navigationBarTitleText": "评价"
+				"navigationBarTitleText": "评价",
+				"app-plus": {
+					"titleNView": {
+						"buttons": [
+							{
+								"text": "提交",
+								"color": "#007aff",
+								"fontSize": "16px",
+								"width":"auto"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"path" : "pages/product/reviewList",
+			"style": {
+				"navigationBarTitleText": "商品评价"
 			}
 		}
-
-
-    ],
+	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",

@@ -79,22 +79,23 @@
 
 		<!-- 评价 -->
 		<view class="eva-section">
-			<view class="e-header">
+			<view class="e-header"   @click="toReview(product.id)">
 				<text class="tit">评价</text>
-				<text>(86)</text>
+				<text>({{product.review_count}})</text>
 				<text class="tip">好评率 100%</text>
 				<text class="yticon icon-you"></text>
 			</view>
 			<view class="eva-box">
-				<image class="portrait" src="http://img3.imgtn.bdimg.com/it/u=1150341365,1327279810&fm=26&gp=0.jpg" mode="aspectFill"></image>
-				<view class="right">
-					<text class="name">Leo yo</text>
-					<text class="con">商品收到了，79元两件，质量不错，试了一下有点瘦，但是加个外罩很漂亮，我很喜欢</text>
-					<view class="bot">
-						<text class="attr">购买类型：XL 红色</text>
-						<text class="time">2019-04-01 19:21</text>
-					</view>
-				</view>
+        <image class="portrait" :src="reviews.order.user.avatar?reviews.order.user.avatar:'/static/missing-face.png'" mode="aspectFill"></image>
+        <view class="right">
+          <text class="name">{{reviews.order.user.name}}</text>
+          <view class="rate"><uni-rate :size="18" :value="reviews.rating" disabledColor="#ffca3e" :disabled="true" /></view>
+          <text class="con">{{reviews.review}}</text>
+          <view class="bot">
+            <text class="attr">购买类型：{{reviews.product_sku.title}}</text>
+            <text class="time">{{reviews.reviewed_at}}</text>
+          </view>
+        </view>
 			</view>
 		</view>
 
@@ -219,6 +220,7 @@
         skuStock:'',
         numberValue:1,
         buyType:'', // 1直接购买，2加入购物车
+        reviews:[]
 			}
 		},
 		async onLoad(options){
@@ -230,6 +232,7 @@
         this.product = data.data.product
         this.imgList = this.product.images_url
         this.skus = data.data.skus
+        this.reviews = data.data.reviews
 			}
       console.log(this.skuStock)
 
@@ -309,6 +312,11 @@
 					url: `/pages/order/createOrder`
 				})
 			},
+      toReview(id){
+        uni.navigateTo({
+          url: `/pages/product/reviewList?id=${id}`
+        })
+      },
 			stopPrevent(){}
 		},
 

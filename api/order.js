@@ -48,3 +48,14 @@ export function receivedOrder(id,data) {
         data: data
     })
 }
+
+export function getReview(id,data) {
+    return authRequest('orders/' + id + '/review')
+}
+
+export function sendReview(id,data) {
+    return authRequest('orders/' + id + '/review', {
+        method: 'post',
+        data: data
+    })
+}

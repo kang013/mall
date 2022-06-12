@@ -78,7 +78,9 @@
               <button class="action-btn" v-if="item.paid_at && item.refund_status === 'pending'" @click="applyRefund(item.id,index)" >申请退款</button>
               <button class="action-btn" v-if="!item.paid_at && !item.closed"  @click="cancelOrder(item.id,index)" >取消订单</button>
               <button class="action-btn recom" v-if="!item.paid_at && !item.closed" @click="payOrder(item.id,item.total_amount)">立即支付</button>
-              <button class="action-btn recom" v-if="item.paid_at && item.ship_status === 'received'" @click="review(item.id,index)">评价</button>
+              <template v-if="!item.reviewed">
+                <button class="action-btn recom" v-if="item.paid_at && item.ship_status === 'received'" @click="review(item.id,index)">评价</button>
+              </template>
 						</view>
 					</view>
 
@@ -163,6 +165,9 @@
         //我是全局事件订阅的调用方法
         if(res.isDel){
           this.resourceData.splice(res.index,1) // 删除元素
+        }
+        if(res.reviewed){
+          this.resourceData[res.index].reviewed = 1
         }
       })
     },

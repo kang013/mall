@@ -11,3 +11,9 @@ export function getProductInfo(id,data) {
         data: data
     })
 }
+
+export function getReview(id,data) {
+    return request('products/' + id + '/review', {
+        data: data
+    })
+}
