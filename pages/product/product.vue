@@ -78,14 +78,14 @@
 		</view>
 
 		<!-- 评价 -->
-		<view class="eva-section">
+		<view class="eva-section" >
 			<view class="e-header"   @click="toReview(product.id)">
 				<text class="tit">评价</text>
 				<text>({{product.review_count}})</text>
-				<text class="tip">好评率 100%</text>
-				<text class="yticon icon-you"></text>
+				<text class="tip" v-if="reviews">好评率 100%</text>
+				<text class="yticon icon-you" v-if="reviews"></text>
 			</view>
-			<view class="eva-box">
+			<view class="eva-box" v-if="reviews">
         <image class="portrait" :src="reviews.order.user.avatar?reviews.order.user.avatar:'/static/missing-face.png'" mode="aspectFill"></image>
         <view class="right">
           <text class="name">{{reviews.order.user.name}}</text>
@@ -116,7 +116,7 @@
 				<text class="yticon icon-gouwuche"></text>
 				<text>购物车</text>
 			</navigator>
-			<view class="p-b-btn" :class="{active: favorite}" @click="toFavorite">
+			<view class="p-b-btn" :class="{active: favored}" @click="toFavorite">
 				<text class="yticon icon-shoucang"></text>
 				<text>收藏</text>
 			</view>
@@ -192,7 +192,7 @@
 
 <script>
 	import share from '@/components/share';
-  import { getProductInfo } from '@/api/product'
+  import { getProductInfo,authGetProduct,favorite,unFavorite } from '@/api/product'
   import uniNumberBox from '@/components/uni-number-box.vue'
   import { addCart } from '@/api/cart'
   import {mapGetters} from 'vuex'
@@ -210,7 +210,6 @@
 				specClass: 'none',
 				specSelected:[],
 
-				favorite: true,
 				shareList: [],
 				imgList: [],
         skus:[],
@@ -218,23 +217,32 @@
         skuId:'',
         skuPrice:'',
         skuStock:'',
+        skuTitle:'',
         numberValue:1,
         buyType:'', // 1直接购买，2加入购物车
-        reviews:[]
+        reviews:[],
+        favored:false, // 收藏
 			}
 		},
 		async onLoad(options){
-
 			//接收传值,id里面放的是标题，因为测试数据并没写id
 			let id = options.id;
 			if(id){
-       let data = await getProductInfo(id)
+        let data = []
+        if (!this.isLoggedIn) {
+          data = await getProductInfo(id)
+        }else{
+          data = await authGetProduct(id)
+        }
+
         this.product = data.data.product
         this.imgList = this.product.images_url
         this.skus = data.data.skus
         this.reviews = data.data.reviews
+        this.favored = data.data.favored
+        console.log(data)
 			}
-      console.log(this.skuStock)
+
 
 		},
 		methods:{
@@ -254,6 +262,7 @@
         this.skuId = item.id
         this.skuPrice = item.price
         this.skuStock = item.stock
+        this.skuTitle = item.title
         this.numberValue = this.numberValue > this.skuStock && this.skuStock !== '' ? this.skuStock : this.numberValue
       },
       // 选择数量
@@ -295,6 +304,22 @@
             title: '加入购物车成功',
             icon: 'success'
           })
+        }else if(this.buyType === 1){
+          // 直接购买添加订单
+          let goodsData = [];
+          goodsData.push({
+            title: this.product.title,
+            sku_title: this.skuTitle,
+            price:this.skuPrice,
+            image:this.product.image_url,
+            sku_id: this.skuId,
+            amount: this.numberValue
+          })
+          uni.navigateTo({
+            url: `/pages/order/createOrder?data=${JSON.stringify({
+              goodsData: goodsData
+            })}`
+          })
         }
 
         this.toggleSpec()
@@ -305,12 +330,29 @@
 			},
 			//收藏
 			toFavorite(){
-				this.favorite = !this.favorite;
+        // 未登录跳转到登录页面
+        if (!this.isLoggedIn) {
+          this.$api.msg('请先登录');
+          setTimeout(function () {
+            wx.navigateTo({
+              url: '/pages/public/login'
+            })
+          }, 2000);
+          return
+        }
+        if(this.favored){
+          unFavorite(this.product.id)
+        }else{
+          favorite(this.product.id)
+        }
+				this.favored = !this.favored
 			},
 			buy(){
-				uni.navigateTo({
+        this.buyType = 1 // 直接购买
+        this.toggleSpec()
+				/*uni.navigateTo({
 					url: `/pages/order/createOrder`
-				})
+				})*/
 			},
       toReview(id){
         uni.navigateTo({
