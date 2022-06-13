@@ -59,3 +59,10 @@ export function sendReview(id,data) {
         data: data
     })
 }
+
+export function createSeckillOrder(data) {
+    return authRequest('seckill_orders', {
+        method: 'post',
+        data: data
+    })
+}

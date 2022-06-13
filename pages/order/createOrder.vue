@@ -107,7 +107,7 @@
 
 <script>
   import { getDefaultAddress } from '@/api/address'
-  import { createOrder } from '@/api/order'
+  import { createOrder,createSeckillOrder } from '@/api/order'
 	export default {
 		data() {
 			return {
@@ -177,13 +177,32 @@
               }
           )
         })
-        let data = {
-          address_id: this.addressData.id,
-          items: sku,
-          remark: this.desc
-        }
 
-        let order = await createOrder(data)
+        let data = []
+        let order = []
+        if(this.goodsData[0].type === 'seckill'){
+          // 如果是秒杀商品
+          data = {
+            address:{
+              province: this.addressData.province,
+              city: this.addressData.city,
+              district: this.addressData.district,
+              address: this.addressData.address,
+              contact_name: this.addressData.contact_name,
+              contact_phone: this.addressData.contact_phone,
+            },
+            sku_id: this.goodsData[0].sku_id,
+            remark: this.desc,
+          }
+          order = await createSeckillOrder(data)
+        }else{
+          data = {
+            address_id: this.addressData.id,
+            items: sku,
+            remark: this.desc
+          }
+          order = await createOrder(data)
+        }
 
 				uni.redirectTo({
 					url: '/pages/money/pay?order_id=' + order.data.id + '&total=' + order.data.total_amount

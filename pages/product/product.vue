@@ -121,9 +121,31 @@
 				<text>收藏</text>
 			</view>
 
-			<view class="action-btn-group">
-				<button type="primary" class=" action-btn no-border buy-now-btn" @click="buy">立即购买</button>
-				<button type="primary" class=" action-btn no-border add-cart-btn" @click="addCart">加入购物车</button>
+      <view class="action-btn-group action-btn-group-long"  v-if="product.type === 'seckill'">
+        <button type="primary" v-if="seckill.is_before_start" class=" action-btn no-border buy-now-btn action-btn-long no-start-btn">
+          <text>未开始</text>
+        </button>
+        <button type="primary" v-else-if="seckill.is_after_end" class=" action-btn no-border buy-now-btn action-btn-long end-btn" >
+          <text>已结束</text>
+        </button>
+        <button type="primary" v-else-if="seckill.is_start" class=" action-btn no-border buy-now-btn action-btn-long" @click="buy">
+          <text>立即抢购</text>
+          <uni-countdown
+              class="time-out"
+              :show-day="showDay"
+              :day="days"
+              :hour="timeHour"
+              :minute="timeMinute"
+              :second="timeSecond"
+              color="#FFFFFF"
+              splitorColor="#FFFFFF"
+              @timeup="timeup"
+          />
+        </button>
+      </view>
+			<view class="action-btn-group" v-else>
+          <button type="primary" class=" action-btn no-border add-cart-btn" @click="addCart">加入购物车</button>
+          <button type="primary" class=" action-btn no-border buy-now-btn" @click="buy">立即购买</button>
 			</view>
 		</view>
 
@@ -209,7 +231,6 @@
 			return {
 				specClass: 'none',
 				specSelected:[],
-
 				shareList: [],
 				imgList: [],
         skus:[],
@@ -222,6 +243,13 @@
         buyType:'', // 1直接购买，2加入购物车
         reviews:[],
         favored:false, // 收藏
+        seckill:[], // 秒杀
+        // 秒杀时间
+        showDay: false,
+        days: 0,
+        timeHour: 0,
+        timeMinute: 0,
+        timeSecond: 0,
 			}
 		},
 		async onLoad(options){
@@ -234,16 +262,20 @@
         }else{
           data = await authGetProduct(id)
         }
-
+        if(data.data.product.type === 'seckill'){
+          // 如果是秒杀商品
+          this.seckill = data.data.seckill
+          if(data.data.seckill.is_start){
+            // 如果秒杀开始了
+            this.computTime(this.seckill.end_at)
+          }
+        }
         this.product = data.data.product
         this.imgList = this.product.images_url
         this.skus = data.data.skus
         this.reviews = data.data.reviews
         this.favored = data.data.favored
-        console.log(data)
 			}
-
-
 		},
 		methods:{
 			//规格弹窗开关
@@ -270,7 +302,7 @@
         this.numberValue = data.number
 
       },
-      // 加入购车车
+      // 加入购物车
       async addCart(){
         this.buyType = 2
         this.toggleSpec()
@@ -313,8 +345,10 @@
             price:this.skuPrice,
             image:this.product.image_url,
             sku_id: this.skuId,
-            amount: this.numberValue
+            amount: this.numberValue,
+            type: this.product.type,
           })
+
           uni.navigateTo({
             url: `/pages/order/createOrder?data=${JSON.stringify({
               goodsData: goodsData
@@ -350,14 +384,42 @@
 			buy(){
         this.buyType = 1 // 直接购买
         this.toggleSpec()
-				/*uni.navigateTo({
-					url: `/pages/order/createOrder`
-				})*/
 			},
       toReview(id){
         uni.navigateTo({
           url: `/pages/product/reviewList?id=${id}`
         })
+      },
+      computTime(time) {
+        // 当前时间的时间戳
+        let nowTime = Date.parse(new Date());
+        // 指定时间的时间戳
+        let endTime = Date.parse(new Date(time));
+        if (endTime < nowTime) {
+          //  截止时间已过
+          return false
+        } else {
+          // 计算相差天数
+          let timeResult = endTime - nowTime;
+          this.days = Math.floor(timeResult / (24 * 3600 * 1000));
+          if(this.days > 0){
+            this.showDay = true
+          }
+          // 计算出小时数
+          let dayMS = timeResult % (24 * 3600 * 1000); // 计算天数后剩余的毫秒数
+          this.timeHour = Math.floor(dayMS / (3600 * 1000));
+          // 计算相差分钟数
+          let hoursMS = dayMS % (3600 * 1000); // 计算小时数后剩余的毫秒数
+          this.timeMinute = Math.floor(hoursMS / (60 * 1000));
+          // 计算相差秒数
+          let minutesMS = hoursMS % (60 * 1000); // 计算分钟数后剩余的毫秒数
+          this.timeSecond = minutesMS / 1000;
+        }
+      },
+      timeup() {
+        // 抢购结束
+        this.seckill.is_after_end = true
+        this.seckill.is_before_start = false
       },
 			stopPrevent(){}
 		},
@@ -790,17 +852,16 @@
 	/* 底部操作菜单 */
 	.page-bottom{
 		position:fixed;
-		left: 30upx;
-		bottom:30upx;
+		left: 0;
+		bottom:0;
 		z-index: 95;
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		width: 690upx;
+		width: 100%;
 		height: 100upx;
 		background: rgba(255,255,255,.9);
-		box-shadow: 0 0 20upx 0 rgba(0,0,0,.5);
-		border-radius: 16upx;
+		box-shadow: 0 0 10upx 0 rgba(0,0,0,.5);
 
 		.p-b-btn{
 			display:flex;
@@ -832,9 +893,6 @@
 			height: 76upx;
 			border-radius: 100px;
 			overflow: hidden;
-			box-shadow: 0 20upx 40upx -16upx #fa436a;
-			box-shadow: 1px 2px 5px rgba(219, 63, 96, 0.4);
-			background: linear-gradient(to right, #ffac30,#fa436a,#F56C6C);
 			margin-left: 20upx;
 			position:relative;
 			&:after{
@@ -843,7 +901,7 @@
 				top: 50%;
 				right: 50%;
 				transform: translateY(-50%);
-				height: 28upx;
+				height: 100%;
 				width: 0;
 				border-right: 1px solid rgba(255,255,255,.5);
 			}
@@ -851,14 +909,32 @@
 				display:flex;
 				align-items: center;
 				justify-content: center;
-				width: 180upx;
+				width: 205upx;
 				height: 100%;
 				font-size: $font-base ;
 				padding: 0;
 				border-radius: 0;
-				background: transparent;
+        background-color: #fa436a;
 			}
+      .add-cart-btn{
+        background-color: #ffb120;
+      }
+      .action-btn-long{
+        width: 410upx;
+      }
+      .no-start-btn{
+        background-color: #ffb120;
+      }
+      .end-btn{
+        background-color: #8f939c;
+      }
 		}
+    .action-btn-group-long{
+      &:after{
+        border-right: none;
+      }
+    }
 	}
+
 
 </style>

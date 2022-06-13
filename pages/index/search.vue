@@ -42,9 +42,9 @@ export default {
     ]
   },
   methods: {
-    onClickDelAll() {
+    /*onClickDelAll() {
       console.log('[父级接收事件]：删除全部搜索记录')
-    },
+    },*/
     onSearchName(e) {
       console.log('[父级接收事件]：点击搜索:'+e)
       uni.navigateTo({
