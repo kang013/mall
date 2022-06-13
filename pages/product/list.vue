@@ -89,7 +89,8 @@
     async onLoad(option) {
 
       // #ifdef H5
-      this.headerTop = document.getElementsByTagName('uni-page-head')[0].offsetHeight+'px';
+      this.headerTop = "44px"
+      // #endif
 
       this.category_id = option.category_id
       this.search = option.search
