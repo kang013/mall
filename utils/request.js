@@ -38,11 +38,24 @@ const request = async (url, options = {}, showLoading = true) => {
         })
     }
 
-    uni.showToast({
-        title: response.data.message,
-        duration: 2000,
-        icon: "none"
-    });
+    if(response.statusCode === 422){
+        // 返回错误信息
+        let errors = response.data.errors
+        let key = Object.keys(errors)   // 获取键值
+        errors[key[0]].forEach(function (item, index) {
+            uni.showToast({
+                title: item,
+                duration: 2000,
+                icon: "none"
+            });
+        });
+        return
+    }
+
+    uni.showModal({
+        title: '提示',
+        content: '服务器错误，请联系管理员或重试'
+    })
 
 }
 
