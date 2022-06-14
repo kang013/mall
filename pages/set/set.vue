@@ -27,7 +27,7 @@
 		</view>
 		<view class="list-cell">
 			<text class="cell-tit">检查更新</text>
-			<text class="cell-tip">当前版本 1.0.3</text>
+			<text class="cell-tip">当前版本 1.0.0</text>
 			<text class="cell-more yticon icon-you"></text>
 		</view>
 		<view class="list-cell log-out-btn" @click="logout">
@@ -62,6 +62,9 @@
       async logout () {
         try {
           await this.$store.dispatch('logout')
+          uni.switchTab({
+            url: '/pages/index/index'
+          });
         } catch (err) {}
       },
 			//switch

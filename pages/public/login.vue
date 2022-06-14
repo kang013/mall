@@ -118,7 +118,9 @@
 				uni.navigateBack();
 			},
 			toRegist(){
-				this.$api.msg('去注册');
+        uni.navigateTo({
+          url: '/pages/public/register'
+        })
 			},
 		},
 
@@ -264,6 +266,10 @@
   .input-item-lg{
     .input{
       background: #f5f5f5;
+      border-radius: 10px;
+      height: 80upx;
+      padding: 0 20upx;
+      font-size: 28upx;
     }
   }
 </style>

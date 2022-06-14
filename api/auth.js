@@ -24,3 +24,10 @@ export function logout(token) {
         }
     })
 }
+
+export function captchas(data){
+    return request('captchas', {
+        method: 'post',
+        data: data
+    })
+}
