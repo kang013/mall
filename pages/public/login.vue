@@ -11,21 +11,18 @@
 			</view>
 
 
-      <view>
+      <view class="input-content">
         <uni-forms ref="form" :modelValue="formData" :rules="rules" err-show-type="toast">
-          <uni-forms-item label="用户名" name="username">
-            <input type="text" v-model="formData.username" placeholder="请输入用户名" />
+          <uni-forms-item class="input-item-lg" name="username">
+            <input class="input" type="text" v-model="formData.username" placeholder="请输入手机号码/用户名" />
           </uni-forms-item>
-          <uni-forms-item label="密码" name="password">
+          <uni-forms-item class="input-item-lg" name="password">
             <input class="input" v-model="formData.password" type="text" placeholder="请输入密码"  />
           </uni-forms-item>
         </uni-forms>
-        <button @click="submit">Submit</button>
+        <button class="confirm-btn"  @click="submit" :disabled="logining">登录</button>
       </view>
 
-
-
-			<button class="confirm-btn" @click="toLogin">登录</button>
 			<view class="forget-section">
 				忘记密码?
 			</view>
@@ -59,6 +56,7 @@
     },
     data(){
 			return {
+        logining:false,
         formData: {
           username: '',
           password: ''
@@ -68,7 +66,7 @@
           username: {
             rules: [{
               required: true,
-              errorMessage: '请填写账户名',
+              errorMessage: '请输入手机号或者账户名',
             },
               {
                 minLength: 1,
@@ -97,14 +95,17 @@
 		},
 		methods: {
       async submit() {
+        this.logining = true
         this.$refs.form.validate().then(res=>{
           //console.log('表单数据信息：', res);
           this.$store.dispatch('login', res).then(result=>{
+            this.logining = false;
             if(this.isLoggedIn){
               this.navBack()
             }
           })
         }).catch(err =>{
+          this.logining = false;
           //console.log('表单错误信息：', err);
         })
       },
@@ -260,4 +261,9 @@
 			margin-left: 10upx;
 		}
 	}
+  .input-item-lg{
+    .input{
+      background: #f5f5f5;
+    }
+  }
 </style>

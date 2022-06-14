@@ -321,7 +321,7 @@
         if (!this.isLoggedIn) {
           this.$api.msg('请先登录');
           setTimeout(function () {
-            wx.navigateTo({
+            uni.navigateTo({
               url: '/pages/public/login'
             })
           }, 2000);
@@ -332,7 +332,7 @@
             sku_id: this.skuId,
             amount: this.numberValue,
           })
-          wx.showToast({
+          uni.showToast({
             title: '加入购物车成功',
             icon: 'success'
           })
@@ -368,7 +368,7 @@
         if (!this.isLoggedIn) {
           this.$api.msg('请先登录');
           setTimeout(function () {
-            wx.navigateTo({
+            uni.navigateTo({
               url: '/pages/public/login'
             })
           }, 2000);

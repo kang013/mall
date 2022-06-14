@@ -3,7 +3,7 @@
 	 * vuex管理登陆状态，具体可以参考官方登陆模板示例
 	 */
 	import {
-		mapMutations
+    mapGetters
 	} from 'vuex';
 	export default {
     // 定义全局常量
@@ -16,6 +16,21 @@
 		onHide: function() {
 			console.log('App Hide')
 		},
+    computed: {
+      ...mapGetters(['isLoggedIn'])
+    },
+    methods:{
+      // 验证登陆的全局方法
+      verifyLogin(){
+        // 未登录跳转到登录页面
+        if (!this.isLoggedIn) {
+          uni.navigateTo({
+            url: '/pages/public/login'
+          })
+          return
+        }
+      }
+    }
 	}
 </script>
 

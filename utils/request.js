@@ -52,6 +52,15 @@ const request = async (url, options = {}, showLoading = true) => {
         return
     }
 
+    if(response.statusCode === 401){
+        uni.showToast({
+            title: response.data.message,
+            duration: 2000,
+            icon: "none"
+        });
+        return
+    }
+
     uni.showModal({
         title: '提示',
         content: '服务器错误，请联系管理员或重试'

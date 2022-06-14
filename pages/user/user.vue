@@ -10,11 +10,14 @@
 				<view class="info-box" url="/pages/public/login">
 					<text class="username">{{userInfo.nickname || '游客'}}</text>
 				</view>-->
-        <view class="info-box"  v-if="isLoggedIn">
-          <text class="username">已登录 已登录 name: {{ user.name }}</text>
+        <view class="portrait-box">
+          <image class="portrait" :src="user.avatar || '/static/missing-face.png'"></image>
         </view>
-        <view class="info-box" @click="navigateTo('/pages/public/login')" v-else>
-          <text class="username">未登录</text>
+        <view class="info-box" v-if="user.name">
+          <text class="username">{{user.name}}</text>
+        </view>
+        <view class="info-box" @click="navTo('/pages/public/login')" >
+          <text class="username">登录 / 注册</text>
         </view>
 			</view>
 			<view class="vip-card-box">
@@ -115,6 +118,9 @@
 			listCell
 		},
       store,
+      computed: {
+        ...mapGetters(['user','isLoggedIn'])
+      },
 		data(){
 			return {
 				coverTransform: 'translateY(0px)',
@@ -129,6 +135,7 @@
         }
       },
 		onLoad(){
+      getApp().verifyLogin()
 		},
 		// #ifndef MP
 		onNavigationBarButtonTap(e) {
@@ -150,9 +157,7 @@
 			}
 		},
 		// #endif
-        computed: {
-          ...mapGetters(['user','isLoggedIn'])
-		},
+
         methods: {
           navigateTo(url,item = '') {
             uni.navigateTo({
