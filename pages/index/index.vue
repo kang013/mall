@@ -15,7 +15,7 @@
 			<view class="titleNview-background" :style="{backgroundColor:titleNViewBackground}"></view>
 			<swiper class="carousel" circular @change="swiperChange">
 				<swiper-item v-for="(item, index) in carouselList" :key="index" class="carousel-item" @click="navToDetailPage({title: '轮播广告'})">
-					<image :src="item.src" />
+					<image :src="item.image_url" />
 				</swiper-item>
 			</swiper>
 			<!-- 自定义swiper指示器 -->
@@ -57,20 +57,15 @@
 		<view class="seckill-section m-t">
 			<view class="s-header">
 				<image class="s-img" src="/static/temp/secskill-img.jpg" mode="widthFix"></image>
-				<text class="tip">8点场</text>
-				<text class="hour timer">07</text>
-				<text class="minute timer">13</text>
-				<text class="second timer">55</text>
-				<text class="yticon icon-you"></text>
 			</view>
 			<scroll-view class="floor-list" scroll-x>
 				<view class="scoll-wrapper">
 					<view
-						v-for="(item, index) in goodsList" :key="index"
+						v-for="(item, index) in seckill" :key="index"
 						class="floor-item"
 						@click="navToDetailPage(item)"
 					>
-						<image :src="item.image" mode="aspectFill"></image>
+						<image :src="item.image_url" mode="aspectFill"></image>
 						<text class="title clamp">{{item.title}}</text>
 						<text class="price">￥{{item.price}}</text>
 					</view>
@@ -79,15 +74,15 @@
 		</view>
 
 		<!-- 团购楼层 -->
-		<view class="f-header m-t">
+<!--		<view class="f-header m-t">
 			<image src="/static/temp/h1.png"></image>
 			<view class="tit-box">
 				<text class="tit">精品团购</text>
 				<text class="tit2">Boutique Group Buying</text>
 			</view>
 			<text class="yticon icon-you"></text>
-		</view>
-		<view class="group-section">
+		</view>-->
+<!--		<view class="group-section">
 			<swiper class="g-swiper" :duration="500">
 				<swiper-item
 					class="g-swiper-item"
@@ -132,12 +127,12 @@
 				</swiper-item>
 
 			</swiper>
-		</view>
+		</view>-->
 
 
 
 		<!-- 分类推荐楼层 -->
-		<view class="f-header m-t">
+<!--		<view class="f-header m-t">
 			<image src="/static/temp/h1.png"></image>
 			<view class="tit-box">
 				<text class="tit">分类精选</text>
@@ -210,7 +205,7 @@
 					</view>
 				</view>
 			</scroll-view>
-		</view>
+		</view>-->
 
 		<!-- 猜你喜欢 -->
 		<view class="f-header m-t">
@@ -224,12 +219,12 @@
 
 		<view class="guess-section">
 			<view
-				v-for="(item, index) in goodsList" :key="index"
+				v-for="(item, index) in resourceData" :key="index"
 				class="guess-item"
 				@click="navToDetailPage(item)"
 			>
 				<view class="image-wrapper">
-					<image :src="item.image" mode="aspectFill"></image>
+					<image :src="item.image_url" mode="aspectFill"></image>
 				</view>
 				<text class="title clamp">{{item.title}}</text>
 				<text class="price">￥{{item.price}}</text>
@@ -241,51 +236,59 @@
 </template>
 
 <script>
-
+  import { getSlide,getSeckill,getLikeProduct } from '@/api/index'
+  import listRefresh from '@/mixins/list-product-refresh.js'
 	export default {
-
+    mixins: [ listRefresh ],
 		data() {
 			return {
 				titleNViewBackground: '',
 				swiperCurrent: 0,
 				swiperLength: 0,
 				carouselList: [],
-				goodsList: []
+				goodsList: [],
+        seckill: [],
 			};
 		},
 
-		onLoad() {
+    async onLoad() {
+      // 轮播图
+      let carouselList = await getSlide({index:'index'})
+      this.titleNViewBackground = "#ffffff"; // 先用白色背景
+      this.swiperLength = carouselList.data.length;
+      this.carouselList = carouselList.data;
+
+      // 秒杀
+      let seckill = await getSeckill()
+      this.seckill = seckill.data
+      console.log(this.seckill)
+
 			this.loadData();
+      console.log(this.resourceData)
 		},
 		methods: {
+      async fetchData() {
+        let params = {
+          page: this.page,
+        }
+        // 获取商品数据
+        return getLikeProduct(params)
+      },
       navTo(url){
         uni.navigateTo({
           url
         })
       },
-			/**
-			 * 请求静态数据只是为了代码不那么乱
-			 * 分次请求未作整合
-			 */
-			async loadData() {
-				let carouselList = await this.$api.json('carouselList');
-				this.titleNViewBackground = carouselList[0].background;
-				this.swiperLength = carouselList.length;
-				this.carouselList = carouselList;
-
-				let goodsList = await this.$api.json('goodsList');
-				this.goodsList = goodsList || [];
-			},
 			//轮播图切换修改背景色
 			swiperChange(e) {
 				const index = e.detail.current;
 				this.swiperCurrent = index;
-				this.titleNViewBackground = this.carouselList[index].background;
+				// this.titleNViewBackground = this.carouselList[index].background;
 			},
 			//详情页
 			navToDetailPage(item) {
 				//测试数据没有写id，用title代替
-				let id = item.title;
+				let id = item.id;
 				uni.navigateTo({
 					url: `/pages/product/product?id=${id}`
 				})
