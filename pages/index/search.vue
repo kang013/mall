@@ -9,8 +9,9 @@
         :color_text="color_border"
         :search_list_hot="search_list_hot"
         :store_key="store_key"
-        @onClickDelAllApi="onClickDelAll"
         @onSearchNameApi="onSearchName"
+        @onClickOldApi="onclickOld"
+        @onClickHotApi="onclickHot"
     ></d-search-log>
 
 
@@ -38,19 +39,25 @@ export default {
   onLoad() {
 
     this.search_list_hot = [
-      '手机','电脑','河南老君山','三亚一游','北京环球影城','杭州西湖','保定驴肉火烧','保定狼牙山玻璃栈道'
+      '手机','电脑','内存',
     ]
   },
   methods: {
-    /*onClickDelAll() {
-      console.log('[父级接收事件]：删除全部搜索记录')
-    },*/
     onSearchName(e) {
-      console.log('[父级接收事件]：点击搜索:'+e)
       uni.navigateTo({
         url: `/pages/product/list?search=${e}`
       })
-    }
+    },
+    onclickOld(e) {
+      uni.navigateTo({
+        url: `/pages/product/list?search=${e}`
+      })
+    },
+    onclickHot(e) {
+      uni.navigateTo({
+        url: `/pages/product/list?search=${e}`
+      })
+    },
   }
 }
 </script>

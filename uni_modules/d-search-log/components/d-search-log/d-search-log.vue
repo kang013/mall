@@ -26,7 +26,7 @@
 
 		<view v-if="search_list_old.length==0" class="mytext">暂无</view>
 		<view class="dSLComVueLog" v-if="search_list_old.length>0">
-			<text class="dSLComVueLogBox mytext" v-for="(item,index) in search_list_old" :key="index">
+			<text class="dSLComVueLogBox mytext" v-for="(item,index) in search_list_old" :key="index" @click="onClickOld(item)">
 				{{item?item:'无'}}
 			</text>
 		</view>
@@ -39,7 +39,7 @@
 		</view>
 
 		<view class="dSLComVueLog" v-if="search_list_hot.length>0 && is_hot_show">
-			<text class="dSLComVueLogBox mytext" v-for="(item,index) in search_list_hot" :key="index">
+			<text class="dSLComVueLogBox mytext" v-for="(item,index) in search_list_hot" :key="index" @click="onClickHot(item)" >
 				{{item?item:'无'}}
 			</text>
 		</view>
@@ -208,6 +208,14 @@
 			},
       back(){
         uni.navigateBack()
+      },
+      onClickOld(name){
+        var that = this
+        that.$emit('onClickOldApi', name);
+      },
+      onClickHot(name){
+        var that = this
+        that.$emit('onClickHotApi', name);
       }
 		}
 	}
