@@ -31,3 +31,17 @@ export function captchas(data){
         data: data
     })
 }
+
+export function register(data){
+    return request('users', {
+        method: 'post',
+        data: data
+    })
+}
+
+export function verificationCodes(data){
+    return request('verificationCodes', {
+        method: 'post',
+        data: data
+    })
+}

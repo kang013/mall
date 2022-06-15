@@ -13,20 +13,23 @@
 
       <view class="input-content">
         <uni-forms ref="form" :modelValue="formData" :rules="rules" err-show-type="toast">
-          <uni-forms-item class="input-item-lg" name="username">
-            <input class="input" type="text" v-model="formData.username" placeholder="请输入用户名" />
+          <uni-forms-item class="input-item-lg" name="name">
+            <input class="input" type="text" v-model="formData.name" placeholder="请输入用户名" />
           </uni-forms-item>
-          <uni-forms-item class="input-item-lg" name="username">
-            <input class="input" type="text" v-model="formData.username" placeholder="请输入手机号码" />
+          <uni-forms-item class="input-item-lg input-ps-bx" name="phone">
+            <input class="input" type="text" v-model="formData.phone" maxlength="11" placeholder="请输入手机号码" @blur="onPhone"  />
+            <view class="send-sms" @click="sendSms" v-if="isShow">获取验证码</view>
+            <view class="send-sms" v-if="!isShow" :style="!isShow ? 'color:#d0d0d0' : ''" >重新获取({{count}})秒</view>
           </uni-forms-item>
-          <uni-forms-item class="input-item-lg" name="username">
-            <input class="input" type="text" v-model="formData.username" placeholder="验证码" />
+          <uni-forms-item class="input-item-lg input-flex-bg" name="code" v-show="showCode">
+            <input class="input input-left" v-model="formData.code" type="text" placeholder="请输入验证码" @blur="onCode"  />
+            <image class="input-img" :src="code.captcha_image_content?code.captcha_image_content:''" @click="checkCode"></image>
           </uni-forms-item>
           <uni-forms-item class="input-item-lg" name="password">
             <input class="input" v-model="formData.password" type="text" placeholder="请输入密码"  />
           </uni-forms-item>
-          <uni-forms-item class="input-item-lg" name="password">
-            <input class="input" v-model="formData.password" type="text" placeholder="请再次输入密码"  />
+          <uni-forms-item class="input-item-lg" name="confirmPassword">
+            <input class="input" v-model="formData.confirmPassword" type="text" placeholder="请输入确认密码"  />
           </uni-forms-item>
         </uni-forms>
         <button class="confirm-btn"  @click="submit" :disabled="logining">注册</button>
@@ -41,27 +44,77 @@
       <text @click="toLogin">去登录</text>
     </view>
 
-
-
-
   </view>
-
-
-
 
 </template>
 
 <script>
 
-import { login } from '@/api/auth'
+import { captchas,register,verificationCodes } from '@/api/auth'
 
 
 export default{
   data(){
     return {
       logining: false,
-      formData: []
-
+      formData: {
+        name: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
+      },
+      code:'',
+      showCode:false,
+      phone:'',
+      isShow: true, //通过 v-show 控制显示'获取按钮'还是'倒计时'
+      count: 0, //倒计时 计数器
+      smsbtn: "",
+      codeTxt: "",
+      rules: {
+        // 对name字段进行必填验证
+        name: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入用户名',
+          },
+            {
+              minLength: 1,
+              maxLength: 30,
+              errorMessage: '姓名长度在 {minLength} 到 {maxLength} 个字符',
+            }
+          ]
+        },
+        phone: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入手机号',
+          },
+            {
+              pattern: /(^1[3|4|5|7|8][0-9]{9}$)/,
+              errorMessage: '请输入正确的手机号码',
+            }
+          ]
+        },
+        password: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入密码',
+          },{
+            minLength: 6,
+            maxLength: 16,
+            errorMessage: '密码至少为 {minLength} 个字符',
+          }]
+        },
+        confirmPassword: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入确认密码',
+          },{
+            minLength: 6,
+            errorMessage: '密码至少为 {minLength} 个字符',
+          }]
+        }
+      }
     }
   },
 
@@ -69,6 +122,84 @@ export default{
 
   },
   methods: {
+    async submit() {
+      this.logining = true
+      this.$refs.form.validate().then(res=>{
+        if(res.password !== res.confirmPassword){
+          this.$api.msg('两次密码不正确');
+          this.logining = false;
+          return
+        }
+        console.log('表单数据信息：', res);
+        let params = {
+          verification_key:this.code.captcha_key,
+          verification_code:res.code,
+          password:res.password,
+          name:res.name,
+          phone:res.phone,
+        }
+        console.log(params)
+        //register(params)
+        this.logining = false
+        /*this.$store.dispatch('login', res).then(result=>{
+          this.logining = false;
+          if(this.isLoggedIn){
+            this.navBack()
+          }
+        })*/
+      }).catch(err =>{
+        this.logining = false;
+       //console.log('表单错误信息：', err);
+      })
+    },
+    async sendSms(){
+      console.log(this.phone)
+      if(!/(^1[3|4|5|7|8][0-9]{9}$)/.test(this.phone)){
+        this.$api.msg('请输入正确的手机号码');
+        return;
+      }
+      if(!this.code.captcha_image_content){
+        this.$api.msg('请输入验证码');
+        return;
+      }
+      let verification = await verificationCodes({
+        captcha_key:this.code.captcha_key,
+        captcha_code:this.code.captcha_key,
+      })
+      console.log(verification.statusCode)
+
+      this.isShow = false;//倒计时
+      this.count = 5; //赋值3秒
+      let times = setInterval(() => {
+        this.count--; //递减
+        if (this.count <= 0) {
+          // <=0 变成获取按钮
+          this.isShow = true;
+          clearInterval(times);
+        }
+      }, 1000); //1000毫秒后执行
+    },
+    async onPhone(e){
+      //console.log(e.detail.value)
+      this.phone = e.detail.value
+      this.showCode = false
+      let code = await captchas({phone:this.phone})
+      if(code.data.captcha_image_content){
+        this.showCode = true
+        this.code = code.data
+      }
+    },
+    onCode(e){
+      this.codeTxt = e.detail.value
+    },
+    async checkCode(){
+      if(this.phone){
+        let code = await captchas({phone:this.phone})
+        if(code.data.captcha_image_content){
+          this.code = code.data
+        }
+      }
+    },
     toLogin(){
       uni.redirectTo({
         url: '/pages/public/login'
@@ -222,6 +353,26 @@ page{
     height: 80upx;
     padding: 0 20upx;
     font-size: 28upx;
+  }
+}
+.input-flex-bg{
+  .input-left{
+    width: 350upx;
+    float: left;
+  }
+  .input-img{
+    width: 230upx;
+    height: 80upx;
+    float: right;
+  }
+}
+.input-ps-bx{
+  position: relative;
+  .send-sms{
+    color: #01aaef;
+    position: absolute;
+    top:22upx;
+    right: 35upx;
   }
 }
 </style>
