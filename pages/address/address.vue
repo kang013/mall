@@ -1,5 +1,6 @@
 <template>
 	<view class="content b-t">
+    <empty v-if="addressList.length === 0"></empty>
 		<view class="list b-b" v-for="(item, index) in addressList" :key="index" @click="checkAddress(item)">
 			<view class="wrapper">
 				<view class="address-box">
@@ -19,8 +20,12 @@
 </template>
 
 <script>
+  import empty from "@/components/empty";
   import { getAddress } from '@/api/address'
 	export default {
+    components: {
+      empty
+    },
 		data() {
 			return {
 				source: 0,
