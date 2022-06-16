@@ -1,5 +1,5 @@
 import Vuex from 'vuex'
-import { login, logout, refresh } from '@/api/auth'
+import { login, logout, refresh,register } from '@/api/auth'
 import * as auth from '@/utils/auth'
 import { getCurrentUser, updateUser } from '@/api/user'
 
@@ -24,6 +24,18 @@ var getters = {
 
 // 定义 actions
 const actions = {
+    async register ({ dispatch }, params = {}) {
+        let registerResponse = await register(params)
+        console.log(registerResponse)
+        console.log(params)
+        if(registerResponse){
+            // 注册成功自动登录
+            await dispatch('login',{
+                username:params.phone,
+                password:params.password
+            })
+        }
+    },
     async login ({ dispatch, commit }, params = {}) {
         const authResponse = await login(params)
         if(authResponse){

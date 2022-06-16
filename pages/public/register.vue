@@ -25,6 +25,9 @@
             <input class="input input-left" v-model="formData.code" type="text" placeholder="请输入验证码" @blur="onCode"  />
             <image class="input-img" :src="code.captcha_image_content?code.captcha_image_content:''" @click="checkCode"></image>
           </uni-forms-item>
+          <uni-forms-item class="input-item-lg" name="verificationCcode" v-show="verShow">
+            <input class="input" v-model="formData.verificationCcode" type="text" placeholder="验证码"  />
+          </uni-forms-item>
           <uni-forms-item class="input-item-lg" name="password">
             <input class="input" v-model="formData.password" type="text" placeholder="请输入密码"  />
           </uni-forms-item>
@@ -50,10 +53,16 @@
 
 <script>
 
-import { captchas,register,verificationCodes } from '@/api/auth'
-
+import { captchas,verificationCodes } from '@/api/auth'
+import store from '@/store'
+import {mapGetters} from 'vuex'
 
 export default{
+  store,
+  computed: {
+    // 用户信息
+    ...mapGetters(['isLoggedIn'])
+  },
   data(){
     return {
       logining: false,
@@ -62,6 +71,7 @@ export default{
         phone: '',
         password: '',
         confirmPassword: '',
+        verificationCcode: '',
       },
       code:'',
       showCode:false,
@@ -114,7 +124,9 @@ export default{
             errorMessage: '密码至少为 {minLength} 个字符',
           }]
         }
-      }
+      },
+      verification:[],
+      verShow:false,
     }
   },
 
@@ -132,8 +144,8 @@ export default{
         }
         console.log('表单数据信息：', res);
         let params = {
-          verification_key:this.code.captcha_key,
-          verification_code:res.code,
+          verification_key:this.verification.key,
+          verification_code:res.verificationCcode,
           password:res.password,
           name:res.name,
           phone:res.phone,
@@ -141,12 +153,14 @@ export default{
         console.log(params)
         //register(params)
         this.logining = false
-        /*this.$store.dispatch('login', res).then(result=>{
-          this.logining = false;
+        this.$store.dispatch('register', params).then(result=>{
           if(this.isLoggedIn){
-            this.navBack()
+            uni.switchTab({
+              url: '/pages/user/user'
+            });
           }
-        })*/
+        })
+
       }).catch(err =>{
         this.logining = false;
        //console.log('表单错误信息：', err);
@@ -159,17 +173,29 @@ export default{
         return;
       }
       if(!this.code.captcha_image_content){
-        this.$api.msg('请输入验证码');
+        this.$api.msg('请输入图片验证码');
         return;
       }
+      console.log(this.codeTxt)
       let verification = await verificationCodes({
         captcha_key:this.code.captcha_key,
-        captcha_code:this.code.captcha_key,
+        captcha_code:this.codeTxt,
       })
-      console.log(verification.statusCode)
+      if(!verification){
+        await this.checkCode()
+        this.$api.msg('请输入正确的图片验证码');
+        return
+      }else{
+        this.verification = verification.data
+        console.log(verification)
+      }
+
+
+
 
       this.isShow = false;//倒计时
-      this.count = 5; //赋值3秒
+      this.verShow = true // 显示验证码输入框
+      this.count = 3; //赋值3秒
       let times = setInterval(() => {
         this.count--; //递减
         if (this.count <= 0) {

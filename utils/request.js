@@ -66,6 +66,10 @@ const request = async (url, options = {}, showLoading = true) => {
         content: '服务器错误，请联系管理员或重试'
     })
 
+    /*const error = new Error(response.data.message)
+    error.response = response
+    return Promise.reject(error)*/
+
 }
 
 const checkToken = async () => {
