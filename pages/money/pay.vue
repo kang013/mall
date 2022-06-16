@@ -7,7 +7,7 @@
 
 		<view class="pay-type-list">
 
-			<view class="type-item b-b" >
+			<view class="type-item b-b" @click="changePayType(1)" >
 				<text class="icon yticon icon-weixinzhifu"></text>
 				<view class="con">
 					<text class="tit">微信支付</text>
