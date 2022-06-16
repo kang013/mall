@@ -171,6 +171,10 @@
 			},
 
 			async submit(){
+        if(!this.addressData.id){
+          this.$api.msg('请添加收货地址');
+          return
+        }
         let list = this.goodsData
         let sku = []
         list.forEach(item=>{
