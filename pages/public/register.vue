@@ -195,7 +195,7 @@ export default{
 
       this.isShow = false;//倒计时
       this.verShow = true // 显示验证码输入框
-      this.count = 3; //赋值3秒
+      this.count = 60; //赋值3秒
       let times = setInterval(() => {
         this.count--; //递减
         if (this.count <= 0) {
