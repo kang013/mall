@@ -93,7 +93,10 @@
       // #endif
 
       this.category_id = option.category_id
-      this.search = option.search
+      if(option.search){
+        this.search = option.search
+      }
+
       this.loadData()
 
     },
